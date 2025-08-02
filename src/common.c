@@ -188,7 +188,6 @@ int decimal_alignment(s21_decimal *value_1, s21_decimal *value_2) {
     return res;
 }
 
-
 // деление на 10 в столбик с остатком
 // value_1 - делимое, quotient - частное, remainder - остаток
 // деление выполняется от старшего бита к младшему
