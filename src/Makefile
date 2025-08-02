@@ -67,5 +67,5 @@ memtest: all
 	rm -rf $(OBJ_DIR) s21_decimal.a memtest
 
 run:
-	gcc -Werror -Wextra units/bigdecimal.c decimal2str.c common.c work.c
+	gcc -Werror -Wextra units/*.c decimal2str.c common.c work.c
 	./a.out

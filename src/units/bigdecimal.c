@@ -1,5 +1,7 @@
 #include "../s21_decimal.h"
 
+big_decimal ten = { {10, 0, 0, 0, 0, 0, 0} };
+
 // Проверка на ноль
 s21_bool bigdec_is_zero(big_decimal const value) {
     int res = TRUE;
@@ -96,9 +98,7 @@ int bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *r
 
 int bigdec_multiply_by10(big_decimal *value) {
     int res = OK;
-    
-    //value->scale++; // Увеличиваем scale на 1
-    
+        
     big_decimal dec1 = *value; 
     big_decimal dec2 = *value; 
     if (res == OK)
@@ -116,12 +116,16 @@ int bigdec_alignment(big_decimal *value_1, big_decimal *value_2) {
 
     if (value_1->scale > value_2->scale) {
         unsigned scale_diff = value_1->scale - value_2->scale;
-        for (unsigned i = 0; res == OK && i < scale_diff; i++)
+        for (unsigned i = 0; res == OK && i < scale_diff; i++) {
             res = bigdec_multiply_by10(value_2); // Умножаем value_2 на 10 scale_diff раз
+            value_2->scale++;
+        }
     } else if (value_2->scale > value_1->scale) {
         unsigned scale_diff = value_2->scale - value_1->scale;
-        for (unsigned i = 0; res == OK && i < scale_diff; i++)
+        for (unsigned i = 0; res == OK && i < scale_diff; i++) {
             res = bigdec_multiply_by10(value_1); // Умножаем value_1 на 10 scale_diff раз
+            value_1->scale++;
+        }
     }
 
     return res;
@@ -230,14 +234,14 @@ int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *r
     return 0;
 }
 
-res_code bigdec_div_by_10(big_decimal* value) {
+res_code bigdec_div_by_10(big_decimal* value){
     big_decimal result = {0};
     big_decimal ostatok;
     big_decimal value_1 = *value;
     unsigned ost = value_1.bits[0] | value_1.bits[1] | value_1.bits[2] | value_1.bits[3] | value_1.bits[4] | value_1.bits[5] | value_1.bits[6] ;
     unsigned znach_1, flag = 0;
     int shift;
-    big_decimal ten = { {10, 0, 0, 0, 0, 0, 0} };
+    
 
     for(unsigned i=0; i<bits_in_big_mantissa; i++){
         if(bigdec_get_bit(value_1, i) ) znach_1 = i;
@@ -269,4 +273,41 @@ res_code bigdec_div_by_10(big_decimal* value) {
     for(int i = 0; i>INTS_IN_BIGDECIMAL-1; i++) value->bits[i] = result.bits[i];
 
     return OK;
+}
+
+int bigdec_znach(big_decimal value) {
+    unsigned znach = 0;
+    
+    for(unsigned i=0; i<bits_in_big_mantissa; i++){
+        if(bigdec_get_bit(value, i) ) znach = i;
+    }
+    return znach;
+}
+
+int bigdec_to_decimal(big_decimal big_dec, s21_decimal *dec) {
+    res_code res;
+
+    while(big_dec.scale>max_scale){ 
+        if(bigdec_znach(big_dec)<95) bigdec_div_mantissa(big_dec, ten, &big_dec);
+        else bigdec_div_by_10(&big_dec);
+        big_dec.scale --;
+    }
+
+    if(big_dec.scale==0 && bigdec_znach(big_dec)>95) res = IS_TOO_LARGE;
+    if(big_dec.scale>max_scale && big_dec.mantissa[0]<10) res = IS_TOO_SMALL; 
+    //if(big_dec.scale<=28 && big_dec_znach(big_dec)>95) //то банковское округление если влезет
+
+    if(big_dec.scale<29 && bigdec_znach(big_dec)<96) { //!!!!
+        dec->low = big_dec.mantissa[0];
+        dec->middle = big_dec.mantissa[1];
+        dec->high = big_dec.mantissa[2];
+        dec->lower_word = big_dec.lower_word;
+        dec->scale = big_dec.scale;
+        dec->zero = big_dec.zero;
+        dec->is_negative = big_dec.is_negative;
+        res = OK;
+    }
+
+    return res;
+
 }

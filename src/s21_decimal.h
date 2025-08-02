@@ -98,7 +98,7 @@ void make_zero_decimal(s21_decimal* dcm);
 // int is_nan(s21_decimal value);                  // Проверка на NaN (не число)
 // int is_inf(s21_decimal value);                  // Проверка на бесконечность
 // int is_valid(s21_decimal value);                // Проверка на корректность числа 
-int is_zero(s21_decimal const *value);          // Проверка на ноль
+int is_zero(s21_decimal const value);             // Проверка на ноль
 
 // Получение и установка битов
 int get_bit(s21_decimal value, int bit_index);                  // Получение значения бита по индексу
@@ -107,7 +107,9 @@ int set_bit(s21_decimal *value, int bit_index, int bit_value);  // Устано�
 int decimal_shift_left(s21_decimal *value, unsigned shift);                              // Смещение битов влево на Shift
 int add_decimal_mantissa(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); // Сложение мантисс двух чисел
 int decimal_multiply_by10(s21_decimal *value);                                           // Умножение decimal на 10
-int decimal_aligment(s21_decimal *value_1, s21_decimal *value_2);                       // Выравнивание scale двух decimal чисел
+int div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder);    // Деление decimal на 10 с остатком
+int decimal_aligment(s21_decimal *value_1, s21_decimal *value_2);                        // Выравнивание scale двух decimal чисел
+int div_mantissa(const s21_decimal value_1, s21_decimal value_2, s21_decimal* quotient, s21_decimal* remainder); // Деление мантисс двух decimal чисел
 
 // Функции для работы с big_decimal
 s21_bool bigdec_is_zero(big_decimal const value); // Проверка на ноль

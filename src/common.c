@@ -1,8 +1,8 @@
 #include "s21_decimal.h"
 
 // Проверка на ноль
-int is_zero(s21_decimal const *value) {
-    return !(value->bits[0] || value->bits[1] || value->bits[2]);
+int is_zero(s21_decimal const value) {
+    return !(value.bits[0] || value.bits[1] || value.bits[2]);
 }
 
 // вспомогательная функция для get и set bit
@@ -155,8 +155,6 @@ int decimal_multiply_by10(s21_decimal *value) {
         res = OUT_OF_RANGE;
         printf("s21_decimal_multiply_by10: scale overflow, returned OUT_OF_RANGE\n");
     }
-    else 
-        value->scale++;
     
     s21_decimal dec1 = *value; 
     s21_decimal dec2 = *value; 
@@ -170,18 +168,98 @@ int decimal_multiply_by10(s21_decimal *value) {
     return res;
 }
 
-int decimalAlignment(s21_decimal *value_1, s21_decimal *value_2) {
+int decimal_alignment(s21_decimal *value_1, s21_decimal *value_2) {
     int res = OK;
 
     if (value_1->scale > value_2->scale) {
         unsigned scale_diff = value_1->scale - value_2->scale;
-        for (unsigned i = 0; res == OK && i < scale_diff; i++)
+        for (unsigned i = 0; res == OK && i < scale_diff; i++) {
             res = decimal_multiply_by10(value_2); // Умножаем value_2 на 10 scale_diff раз
+            value_2->scale++;
+        }
     } else if (value_2->scale > value_1->scale) {
         unsigned scale_diff = value_2->scale - value_1->scale;
-        for (unsigned i = 0; res == OK && i < scale_diff; i++)
+        for (unsigned i = 0; res == OK && i < scale_diff; i++) {
             res = decimal_multiply_by10(value_1); // Умножаем value_1 на 10 scale_diff раз
+            value_1->scale++;
+        }
     }
 
     return res;
+}
+
+
+// деление на 10 в столбик с остатком
+// value_1 - делимое, quotient - частное, remainder - остаток
+// деление выполняется от старшего бита к младшему
+// результат записывается в quotient, остаток в remainder
+int div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder) {
+    s21_decimal quot = {0};
+    s21_decimal ten = {0};
+    unsigned rem = 0;
+    int res = OK;
+
+    quot.bits[3] = value_1.bits[3];
+    ten.bits[0] = 10;
+
+    if (is_zero(value_1)) {
+        res = OK;
+    } else if (s21_is_less(value_1, ten)) {
+        //проверка что число 0 < x < 10
+        if (value_1.scale == 28) {
+            res = IS_TOO_SMALL;    // деление на 10 невозможно. Число слишком маленькое
+        } else {
+            rem = value_1.bits[0]; // остаток равен делимому
+            quot.bits[0] = 0;      // частное равно 0.      Занулять ли частное?
+            quot.scale = value_1.scale + 1; // увеличиваем scale на 1, т.к. делим на 10
+        }
+    } else {
+        for (int i = bits_in_mantissa - 1; i >= 0; --i) {
+            rem = (rem << 1) | get_bit(value_1, i);
+            // если rem >= 10, вычитаем 10 и устанавливаем 1 в результат
+            if (rem >= 10) {
+                rem -= 10;
+                set_bit(&quot, i, 1);
+            } else {
+                set_bit(&quot, i, 0);
+            }
+        }
+    }
+
+    *quotient = quot;
+    *remainder = rem;
+    return res;
+}
+
+int div_mantissa(const s21_decimal value_1, s21_decimal value_2, s21_decimal* quotient, s21_decimal* remainder) {
+    s21_decimal quot = {0};
+    s21_decimal rem = {0};
+
+    //двигаемся от старшего бита к младшему
+    for (int i = bits_in_mantissa - 1; i >= 0; --i) {
+        // printf("i = %d, rem = %u\n", i, rem.bits[0]);
+        // rem = rem * 2 + текущий бит
+        decimal_shift_left(&rem, 1);
+        set_bit(&rem, 0, get_bit(value_1, i));
+        // printBinary(rem.bits[0]);
+        // printf("rem after shift = %u\n", rem.bits[0]);
+
+        // если rem >= 10, вычитаем 10 и устанавливаем 1 в результат
+        if (s21_is_greater_or_equal(rem, value_2)) {
+            // printf("rem >= 5, rem = %u\n", rem.bits[0]);
+            s21_sub(rem, value_2, &rem);
+            set_bit(&quot, i, 1);
+            // printf("set_bit quot at %d to 1\n", i);
+            // printBinary(quot.bits[2]);
+        } else {
+            // printf("set_bit quot at %d to 0\n", i);
+            // printBinary(quot.bits[0]);
+            set_bit(&quot, i, 0);
+        }
+        // printf("rem after division = %u\n\n", rem.bits[0]);
+    }
+
+    *quotient = quot;
+    *remainder = rem;
+    return OK;
 }

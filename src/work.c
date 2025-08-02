@@ -1,87 +1,5 @@
 #include "s21_decimal.h"
 
-// деление на 10 в столбик с остатком
-// value_1 - делимое, quotient - частное, remainder - остаток
-// деление выполняется от старшего бита к младшему
-// результат записывается в quotient, остаток в remainder
-int div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder) {
-    s21_decimal quot = {0};
-    unsigned rem = 0;
-
-    //двигаемся от старшего бита к младшему
-    for (int i = bits_in_mantissa - 1; i >= 0; --i) {
-        //printf("i = %d, rem = %u\n", i, rem);
-        // rem = rem * 2 + текущий бит
-        rem = (rem << 1) | get_bit(value_1, i);
-        // printBinary(rem);
-        // printf("rem after shift = %u\n", rem);
-
-        // если rem >= 10, вычитаем 10 и устанавливаем 1 в результат
-        if (rem >= 10) {
-            // printf("rem >= 10, rem = %u\n", rem);
-            rem -= 10;
-            set_bit(&quot, i, 1);
-            // printf("set_bit quot at %d to 1\n", i);
-            // printBinary(quot.bits[0]);
-        } else {
-            // printf("set_bit quot at %d to 0\n", i);
-            // printBinary(quot.bits[0]);
-            set_bit(&quot, i, 0);
-        }
-        // printf("rem after division = %u\n\n", rem);
-    }
-
-    *quotient = quot;
-    *remainder = rem;
-    return OK;
-}
-
-
-int s21_is_greater_or_equal(s21_decimal value_1, s21_decimal value_2) {
-    return value_1.bits[0] >= value_2.bits[0];
-}
-
-int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
-    result->bits[0] = value_1.bits[0] - value_2.bits[0];
-}
-
-int div_mantissa(const s21_decimal value_1, s21_decimal value_2, s21_decimal* quotient, s21_decimal* remainder) {
-    s21_decimal quot = {0};
-    s21_decimal rem = {0};
-
-    //двигаемся от старшего бита к младшему
-    for (int i = bits_in_mantissa - 1; i >= 0; --i) {
-        // printf("i = %d, rem = %u\n", i, rem.bits[0]);
-        // rem = rem * 2 + текущий бит
-        decimal_shift_left(&rem, 1);
-        set_bit(&rem, 0, get_bit(value_1, i));
-        // printBinary(rem.bits[0]);
-        // printf("rem after shift = %u\n", rem.bits[0]);
-
-        // если rem >= 10, вычитаем 10 и устанавливаем 1 в результат
-        if (s21_is_greater_or_equal(rem, value_2)) {
-            // printf("rem >= 5, rem = %u\n", rem.bits[0]);
-            s21_sub(rem, value_2, &rem);
-            set_bit(&quot, i, 1);
-            // printf("set_bit quot at %d to 1\n", i);
-            // printBinary(quot.bits[2]);
-        } else {
-            // printf("set_bit quot at %d to 0\n", i);
-            // printBinary(quot.bits[0]);
-            set_bit(&quot, i, 0);
-        }
-        // printf("rem after division = %u\n\n", rem.bits[0]);
-    }
-
-    *quotient = quot;
-    *remainder = rem;
-    return OK;
-}
-
-
-
-
-
 int main() {
 
 
@@ -89,23 +7,46 @@ int main() {
     big_decimal bdcm2 = {0};
     big_decimal bdcm3 = {0};
     s21_decimal dcm1 = {0};
+    s21_decimal dcm2 = {0};
+    s21_decimal dcm3 = {0};
+
+    // dcm1.bits[0] = 11; // 4294967295
+    dcm1.bits[0] = 0xFFFFFFFF; // 4294967295
+    dcm1.bits[1] = 0xFFFFFFFF; 
+    dcm1.bits[2] = 0xFFFFFFFF; 
+    
+    unsigned remainder = 0;
+
+    printf("Decimal 1:\n");
+    printDecimalBinary(dcm1);
+    print_s21_decimal(dcm1);
+
+    div_by_10(dcm1, &dcm2, &remainder); 
+
+    printf("quotient: \n");
+    printDecimalBinary(dcm2);
+    print_s21_decimal(dcm1);
+    print_s21_decimal(dcm2);
+    printf("remainder: %u\n", remainder);
+    
 
 
+// тестирование bigdec_div_mantissa
 
     // dcm1.bits[0] = 0b11111111111111111111111111111110; // 4294967294
     // dcm1.bits[1] = 1; // 8589934590
     // print_s21_decimal(dcm1);
 
-    bdcm1.bits[0] = 0b11111111111111111111111111111110; // 4294967294
-    bdcm1.bits[1] = 1; // 8589934590
-    // printBigDecimalBinary(bdcm1,"");
+    // bdcm1.bits[0] = 0b11111111111111111111111111111110; // 4294967294
+    // bdcm1.bits[1] = 1; // 8589934590
+    // // printBigDecimalBinary(bdcm1,"");
 
-    bdcm2.bits[0] = 10; //делитель
+    // bdcm2.bits[0] = 10; //делитель
 
-    bigdec_div_mantissa(bdcm1, bdcm2, &bdcm3);
+    // bigdec_div_mantissa(bdcm1, bdcm2, &bdcm3);
 
-    printBigDecimalBinary(bdcm3,"");
-    printf("%u\n\n", bdcm3.bits[0]);
+    // printBigDecimalBinary(bdcm3,"");
+    // printf("%u\n\n", bdcm3.bits[0]);
 
 
 

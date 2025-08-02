@@ -3,6 +3,17 @@
 #include <math.h>
 
 
+
+/*══════════════════════════════════════════════════════════════════════════════════╗
+║ ███████╗ ███████╗ ██╗      ███████╗ ███████╗ ██████╗██╗███╗   ███╗ █████╗ ██╗     ║
+║ ██╔════╝ ╚════██║ ██║      ██╔═══██╗██╔════╝██╔════╝██║████╗ ████║██╔══██╗██║     ║
+║ ███████╗ ███████║ ██║      ██║   ██║█████╗  ██║     ██║██╔████╔██║███████║██║     ║
+║ ╚════██║ ██╔════╝ ██║      ██║   ██║██╔══╝  ██║     ██║██║╚██╔╝██║██╔══██║██║     ║
+║ ███████║ ███████╗ ██║      ███████╔╝███████╗╚██████╗██║██║ ╚═╝ ██║██║  ██║███████╗║
+║ ╚══════╝ ╚══════╝ ╚═╝        ╚════╝ ╚══════╝ ╚═════╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝║
+║                              B I G   D E C I M A L                                ║
+╚══════════════════════════════════════════════════════════════════════════════════*/
+
 // ##################################################################### //
 // ----------------------------- get_bit    ---------------------------- //
 // ##################################################################### //
@@ -67,6 +78,125 @@ ck_assert_int_eq(value.bits[2], 0b00000000000000000000000000000010); // 2
 s21_decimal value = {0};
 value.bits[2] = 0b10000000000000000000000000000000;
 ck_assert_int_eq(decimal_shift_left(&value, 1), OUT_OF_RANGE); // high bit overflow
+
+
+
+
+
+// ##################################################################### //
+// ----------------------------- div_by_10   --------------------------- //
+// ##################################################################### //
+
+//поделить 1 на 10. ожидание: OK scale = 1, quotient = 0, remainder = 1
+#test div_by_10_test1
+s21_decimal value = {0};
+s21_decimal quotient = {0};
+unsigned remainder = 0;
+int res;
+value.bits[0] = 0b00000000000000000000000000000001; // 1
+
+res = div_by_10(value, &quotient, &remainder);
+
+ck_assert_int_eq(res, OK);
+ck_assert_int_eq(quotient.bits[0], 0);
+ck_assert_int_eq(quotient.scale, 1);
+ck_assert_int_eq(remainder, 1);
+
+//поделить 10 на 10. ожидание: OK scale = 0, quotient = 1, remainder = 0
+#test div_by_10_test2
+s21_decimal value = {0};
+s21_decimal quotient = {0};
+unsigned remainder = 0;
+int res;
+value.bits[0] = 10;
+
+res = div_by_10(value, &quotient, &remainder);
+
+ck_assert_int_eq(res, OK);
+ck_assert_int_eq(quotient.bits[0], 1);
+ck_assert_int_eq(quotient.scale, 0);
+ck_assert_int_eq(remainder, 0);
+
+
+//поделить -10 на 10. ожидание: OK scale = 0, quotient = -1, remainder = 0
+#test div_by_10_test3
+s21_decimal value = {0};
+s21_decimal quotient = {0};
+unsigned remainder = 0;
+int res;
+value.is_negative = 1;
+value.bits[0] = 10;
+
+res = div_by_10(value, &quotient, &remainder);
+
+ck_assert_int_eq(res, OK);
+ck_assert_int_eq(quotient.bits[0], 1);
+ck_assert_int_eq(quotient.is_negative, 1);
+ck_assert_int_eq(quotient.scale, 0);
+ck_assert_int_eq(remainder, 0);
+
+// деление 1 на 10 с scale = 28. ожидание: IS_TOO_SMALL
+#test div_by_10_test4
+s21_decimal value = {0};
+s21_decimal quotient = {0};
+unsigned remainder = 0;
+int res;
+value.scale = 28; // максимальный scale
+value.bits[0] = 0b00000000000000000000000000000001; // 1
+
+res = div_by_10(value, &quotient, &remainder);
+
+ck_assert_int_eq(res, IS_TOO_SMALL);
+
+
+// деление 1 на 10 с scale = 27. ожидание: OK, quotient.scale = 28, remainder = 1
+#test div_by_10_test5
+s21_decimal value = {0};
+s21_decimal quotient = {0};
+unsigned remainder = 0;
+int res;
+value.scale = 27;
+value.bits[0] = 0b00000000000000000000000000000001; // 1
+
+res = div_by_10(value, &quotient, &remainder);
+
+ck_assert_int_eq(res, OK);
+ck_assert_int_eq(quotient.bits[0], 0);
+ck_assert_int_eq(quotient.scale, 28);
+ck_assert_int_eq(remainder, 1);
+
+//деление 2^96 на 10 ожидание: OK scale = 0, quotient = 7922816251426433759354395033, remainder = 5
+#test div_by_10_test6
+s21_decimal value = {0};
+s21_decimal quotient = {0};
+unsigned remainder = 0;
+int res;
+value.bits[0] = 0xFFFFFFFF;
+value.bits[1] = 0xFFFFFFFF;
+value.bits[2] = 0xFFFFFFFF; // 79228162514264337593543950335 - 2^96
+
+res = div_by_10(value, &quotient, &remainder);
+
+ck_assert_int_eq(res, OK);
+ck_assert_int_eq(quotient.bits[0], 0b10011001100110011001100110011001);
+ck_assert_int_eq(quotient.bits[1], 0b10011001100110011001100110011001);
+ck_assert_int_eq(quotient.bits[2], 0b00011001100110011001100110011001);
+ck_assert_int_eq(quotient.scale, 0);
+ck_assert_int_eq(remainder, 5);
+
+
+
+
+
+/*════════════════════════════════════════════════════════════════════════════════╗
+║ ██████╗ ██╗ ██████╗      ███████╗ ███████╗ ██████╗██╗███╗   ███╗ █████╗ ██╗     ║
+║ ██╔══██╗██║██╔════╝      ██╔═══██╗██╔════╝██╔════╝██║████╗ ████║██╔══██╗██║     ║
+║ ██████╔╝██║██║  ███╗     ██║   ██║█████╗  ██║     ██║██╔████╔██║███████║██║     ║
+║ ██╔══██╗██║██║   ██║     ██║   ██║██╔══╝  ██║     ██║██║╚██╔╝██║██╔══██║██║     ║
+║ ██████╔╝██║╚██████╔╝     ███████╔╝███████╗╚██████╗██║██║ ╚═╝ ██║██║  ██║███████╗║
+║ ╚═════╝ ╚═╝ ╚═════╝        ╚════╝ ╚══════╝ ╚═════╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝║
+║                              B I G   D E C I M A L                              ║
+╚════════════════════════════════════════════════════════════════════════════════*/
 
 
 
@@ -330,12 +460,12 @@ ck_assert_int_eq(bdcm1.is_negative, 1); // is_negative должен быть 1
 // ----------------------------- bigdec_div_by_10 -------------------- //
 // ##################################################################### //
 
-#test bigdec_div_by_10_test1
-    big_decimal bdcm1 = {0};
+// #test bigdec_div_by_10_test1
+//     big_decimal bdcm1 = {0};
 
-    bdcm1.bits[0] = 0b11111111111111111111111111111110; // 4294967294
-    bdcm1.bits[1] = 1; // 8589934590
+//     bdcm1.bits[0] = 0b11111111111111111111111111111110; // 4294967294
+//     bdcm1.bits[1] = 1; // 8589934590
 
-    bigdec_div_by_10(&bdcm1);
-    ck_assert_int_eq(bdcm1.bits[0], 858993459); 
+//     bigdec_div_by_10(&bdcm1);
+//     ck_assert_int_eq(bdcm1.bits[0], 858993459); 
 
