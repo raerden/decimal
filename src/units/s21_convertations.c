@@ -98,7 +98,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
     while (exp > 0 && res == OK)
     // -exp == scale > 0 поэтому нужно уменьшить экспоненту до 0, умножая мантиссу на 10 
     {
-        res = decimal_multiply_by10(dst);
+        res = decimal_multiply_by_10(dst);
         exp--;
         dst->scale = 0;
     }
@@ -107,11 +107,11 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
     {
         while ((-exp > (int)max_scale) && (res == OK))
         {
-            res = decimal_multiply_by10(dst);
+            res = decimal_multiply_by_10(dst);
             exp++;
             dst->scale = 0;
         }
-        if (res == OK) 
+        if (res == OK)
             dst->scale = (unsigned)(-exp);
     }
 
@@ -133,20 +133,52 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst)
         // из README: если в числе decimal есть дробная часть, то её следует отбросить (0.9 преобразуется в 0)
             res = s21_truncate(src, &int_dec);
         // int_dec.scale == 0
-        if (int_dec.middle || int_dec.middle)
+        if (int_dec.middle || int_dec.high)
             res = CONVERTATION_ERR;
         
-        if (res == OK)
+        if (res == OK && (int_dec.low <= INT_MAX))
         {
             *dst = int_dec.low;
             if (is_negative) 
                 *dst += -1;
         }
-        else *dst = 0;
+        else 
+        {
+            *dst = 0;
+            res = CONVERTATION_ERR;
+        }
     }
-    return (res == OK)?OK:CONVERTATION_ERR;
+    return res;
 }     
 
 // Преобразование из s21_decimal в float
-int s21_from_decimal_to_float(s21_decimal src, float *dst);
+int s21_from_decimal_to_float(s21_decimal src, float *dst)
+{
+    if (!dst) return CONVERTATION_ERR;
+    res_code res = OK;
+    *dst = 0.0;
+    if (!is_zero(src))
+    {
+        long double big_float = 0;
+        for (unsigned i = 0; (i < bits_in_mantissa) && (res == OK); i++)
+        {
+            s21_bool is_one = get_bit(src, i);
+            long double tmp = big_float;
+            if (is_one)
+                big_float += pow(2, i);
+            if (big_float < tmp)        // сомнительная, но проверка на переполнение
+                res = IS_TOO_LARGE;
+        }
+        if (res == OK)
+        {
+            unsigned scale = src.scale;
+            while (scale--) big_float /= 10;
+            *dst = (float)big_float;
+        }
+    }
 
+    if (src.is_negative)
+        *dst *= -1;
+
+    return res;
+}

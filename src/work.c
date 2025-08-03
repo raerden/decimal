@@ -1,15 +1,26 @@
 #include "s21_decimal.h"
 
 int main() {
+    s21_decimal dcm1, dcm2, dcm3 = {0};
+    big_decimal bdcm1, bdcm2, bdcm3 = {0};
 
 
-    big_decimal bdcm1 = {0};
-    big_decimal bdcm2 = {0};
-    big_decimal bdcm3 = {0};
-    s21_decimal dcm1 = {0};
-    s21_decimal dcm2 = {0};
-    s21_decimal dcm3 = {0};
+    //пример работы сложения
+    dcm1.bits[0] = 11;
+    dcm2.bits[0] = 11;
+    s21_add(dcm1, dcm2, &dcm3);
+    printDecimalBinary(dcm3);
+    printf("%u\n", dcm3.bits[0]);
 
+    // //Пример работы округления
+    // dcm1.bits[0] = 12346;
+    // dcm1.scale = 1;
+    // s21_round(dcm1, &dcm2);
+    // printDecimalBinary(dcm2);
+    // printf("%u\n", dcm2.bits[0]);
+
+
+    return 0;
     // dcm1.bits[0] = 11; // 4294967295
     dcm1.bits[0] = 0xFFFFFFFF; // 4294967295
     dcm1.bits[1] = 0xFFFFFFFF; 
@@ -258,14 +269,14 @@ int main() {
 
 
 
-    // // Пример использования decimal_multiply_by10
+    // // Пример использования decimal_multiply_by_10
     // dcm1.bits[0] = 5; // 5
     // dcm1.scale = 0; // scale = 0
     // printf("Before multiply by 10:\n");
     // printDecimalBinary(dcm1);
     // printf("Result bits[0]: %u scale: %u\n\n", dcm1.bits[0], dcm1.scale);
 
-    // int res = decimal_multiply_by10(&dcm1);
+    // int res = decimal_multiply_by_10(&dcm1);
     // if (res == OK) {
     //     printf("After multiply by 10:\n");
     //     printDecimalBinary(dcm1);
