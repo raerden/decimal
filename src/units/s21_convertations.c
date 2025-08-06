@@ -19,6 +19,13 @@ s21_bool is_valid(float value)                     // Проверка на ко
         res = FALSE;
     return res;
 }
+
+s21_bool is_small_float(const float f_num)
+{
+    // const double epsilon = 0.0000001;
+    // return ((double)f_num < epsilon)?TRUE:FALSE;
+    return (f_num == 0.0)?TRUE:FALSE;
+}
 //___________________________________________________________________________________
 
 // Преобразование из int в s21_decimal
@@ -79,40 +86,43 @@ unsigned significand_from_float(const float src, const unsigned precision, int* 
 int s21_from_float_to_decimal(float src, s21_decimal *dst)
 {
     res_code res = OK;
-    // !!! здесь нужна проверка на NULL, nan, inf, 0, 
-    make_zero_decimal(dst);
+    if (!dst || !is_valid(src)) res = CONVERTATION_ERR;
+    if (dst) make_zero_decimal(dst);
 
-    if (1/src < 0)       // 1/src по опыту s21_string чтобы не прогадать с малыми значениями float
+    if (res == OK && !is_small_float(src))
     {
-        dst->is_negative = TRUE;
-        src = -src;
-    }
+        if (1/src < 0)       // 1/src по опыту s21_string чтобы не прогадать с малыми значениями float
+        {
+            dst->is_negative = TRUE;
+            src = -src;
+        }
 
-    const int precision = 6;
-    int exp = 0;
-    unsigned significand = significand_from_float(src, precision, &exp);
+        const int precision = 6;
+        int exp = 0;
+        unsigned significand = significand_from_float(src, precision, &exp);
     
-    exp -= precision;
-    dst->low = significand;
+        exp -= precision;
+        dst->low = (unsigned)significand;             // 7-значное число, точно влезет в low
 
-    while (exp > 0 && res == OK)
-    // -exp == scale > 0 поэтому нужно уменьшить экспоненту до 0, умножая мантиссу на 10 
-    {
-        res = decimal_multiply_by_10(dst);
-        exp--;
-        dst->scale = 0;
-    }
-
-    if (exp < 0 && res == OK)          // while выше не выполнялся
-    {
-        while ((-exp > (int)max_scale) && (res == OK))
+        while (exp > 0 && res == OK)
+        // -exp == scale > 0 поэтому нужно уменьшить экспоненту до 0, умножая мантиссу на 10 
         {
             res = decimal_multiply_by_10(dst);
-            exp++;
+            exp--;
             dst->scale = 0;
         }
-        if (res == OK)
-            dst->scale = (unsigned)(-exp);
+
+        if (exp < 0 && res == OK)          // while выше не выполнялся
+        {
+            while ((-exp > (int)max_scale) && (res == OK))
+            {
+                res = decimal_multiply_by_10(dst);
+                exp++;
+                dst->scale = 0;
+            }
+            if (res == OK)
+                dst->scale = (unsigned)(-exp);
+        }
     }
 
     return (res == OK)?OK:CONVERTATION_ERR;
@@ -136,11 +146,16 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst)
         if (int_dec.middle || int_dec.high)
             res = CONVERTATION_ERR;
         
-        if (res == OK && (int_dec.low <= INT_MAX))
+        if (res == OK && (int_dec.low <= (unsigned)INT_MAX + 1))
         {
-            *dst = int_dec.low;
-            if (is_negative) 
-                *dst += -1;
+            s21_bool is_min_int = (is_negative && (int_dec.low == (unsigned)INT_MAX + 1));
+            if (is_min_int) *dst = INT_MIN;
+            else
+            {
+                *dst = int_dec.low;
+                if (is_negative) 
+                    *dst *= -1;
+            }
         }
         else 
         {
@@ -149,7 +164,15 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst)
         }
     }
     return res;
-}     
+}
+
+long double pow_of_2(const unsigned n)
+{
+    long double res = 1;
+    for (unsigned i = 1; i <= n; i++)
+        res *= 2;
+    return res;
+}
 
 // Преобразование из s21_decimal в float
 int s21_from_decimal_to_float(s21_decimal src, float *dst)
@@ -165,7 +188,7 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst)
             s21_bool is_one = get_bit(src, i);
             long double tmp = big_float;
             if (is_one)
-                big_float += pow(2, i);
+                big_float += pow_of_2(i);
             if (big_float < tmp)        // сомнительная, но проверка на переполнение
                 res = IS_TOO_LARGE;
         }

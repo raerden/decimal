@@ -2,15 +2,59 @@
 
 int main() {
     s21_decimal dcm1, dcm2, dcm3 = {0};
-    big_decimal bdcm1, bdcm2, bdcm3 = {0};
+    big_decimal bdcm1 = {0};
+    big_decimal bdcm2 = {0};
+    big_decimal bdcm3 = {0};
+
+    bdcm1.bits[0] = 1;
+    bdcm1.scale = 5;
+
+    bdcm2.bits[0] = 1;
+    bdcm2.scale = 0;
+
+    bigdec_alignment(&bdcm1, &bdcm2);
 
 
-    //пример работы сложения
-    dcm1.bits[0] = 11;
-    dcm2.bits[0] = 11;
-    s21_add(dcm1, dcm2, &dcm3);
-    printDecimalBinary(dcm3);
-    printf("%u\n", dcm3.bits[0]);
+
+printBigDecimalBinary(bdcm1, "70");
+printf("\n");
+printBigDecimalBinary(bdcm2, "70");
+printf("%u\n", bdcm2.bits[0]);
+
+    // dcm1.bits[0] = 10;
+    // dcm1.is_negative = 1;
+    // // dcm1.bits[0] = 0xFFFFFFFF;
+    // // dcm1.bits[1] = 0xFFFFFFFF;
+    // // dcm1.bits[2] = 0xFFFFFFFF;
+    // unsigned remainder;
+     
+    // div_by_10(dcm1, &dcm2, &remainder);
+    // printDecimalBinary(dcm2);
+
+
+
+
+    // //пример работы сложения
+    // dcm1.bits[0] = 0xFFFFFFFF; // 4294967295
+    // dcm1.bits[1] = 0xFFFFFFFF; 
+    // dcm1.bits[2] = 0; 
+
+    // dcm2.bits[0] = 0xFFFFFFFF; // 4294967295
+    // dcm2.bits[1] = 0; 
+    // dcm2.bits[2] = 0; 
+
+    // s21_add(dcm1, dcm2, &dcm3);
+    // printDecimalBinary(dcm3);
+    // printf("%u\n", dcm3.bits[0]);
+    // print_s21_decimal(dcm1);
+    // print_s21_decimal(dcm2);
+    // print_s21_decimal(dcm3);
+/*
+18446744073709551615
+          4294967295
+18446744078004518910
+
+*/
 
     // //Пример работы округления
     // dcm1.bits[0] = 12346;
@@ -21,24 +65,24 @@ int main() {
 
 
     return 0;
-    // dcm1.bits[0] = 11; // 4294967295
-    dcm1.bits[0] = 0xFFFFFFFF; // 4294967295
-    dcm1.bits[1] = 0xFFFFFFFF; 
-    dcm1.bits[2] = 0xFFFFFFFF; 
+    // // dcm1.bits[0] = 11; // 4294967295
+    // dcm1.bits[0] = 0xFFFFFFFF; // 4294967295
+    // dcm1.bits[1] = 0xFFFFFFFF; 
+    // dcm1.bits[2] = 0xFFFFFFFF; 
     
-    unsigned remainder = 0;
+    // unsigned remainder = 0;
 
-    printf("Decimal 1:\n");
-    printDecimalBinary(dcm1);
-    print_s21_decimal(dcm1);
+    // printf("Decimal 1:\n");
+    // printDecimalBinary(dcm1);
+    // print_s21_decimal(dcm1);
 
-    div_by_10(dcm1, &dcm2, &remainder); 
+    // div_by_10(dcm1, &dcm2, &remainder); 
 
-    printf("quotient: \n");
-    printDecimalBinary(dcm2);
-    print_s21_decimal(dcm1);
-    print_s21_decimal(dcm2);
-    printf("remainder: %u\n", remainder);
+    // printf("quotient: \n");
+    // printDecimalBinary(dcm2);
+    // print_s21_decimal(dcm1);
+    // print_s21_decimal(dcm2);
+    // printf("remainder: %u\n", remainder);
     
 
 

@@ -1,7 +1,7 @@
 #include "s21_decimal.h"
 
 // Проверка на ноль
-int is_zero(s21_decimal const value) {
+int is_zero(const s21_decimal value) {
     return !(value.bits[0] || value.bits[1] || value.bits[2]);
 }
 
@@ -58,17 +58,16 @@ int s21_negate(s21_decimal value, s21_decimal *result)
 int decimal_shift_left(s21_decimal *value, unsigned shift) {
     int res = OK;
 
-    if (res == OK && shift > 0) {
+    if (shift > 0) {
         unsigned overflow = 0;
         for (unsigned i = 0; i < ints_in_mantissa; i++) {
             unsigned memo = value->bits[i];
             value->bits[i] = (memo << shift) | overflow; // Сдвиг влево с учетом предыдущего переполнения
-            overflow = memo >> (bits_in_int - shift); // Сохраняем переполнение
+            overflow = memo >> (bits_in_int - shift);    // Сохраняем переполнение
         }
         // Если в overflow есть значение для bits[3], возвращаем ошибку переполнения
-        if (overflow != 0) {
-            res = IS_TOO_LARGE; 
-        }
+        if (overflow != 0)
+            res = IS_TOO_LARGE;
     }
 
     return res;
@@ -89,16 +88,15 @@ int add_decimal_mantissa(s21_decimal value_1, s21_decimal value_2, s21_decimal *
         set_bit(result, i, sum);
     }
 
-    if (memo > 0) {
+    if (memo > 0)
         // Если остался перенос в bits[3], значит переполнение
         res = IS_TOO_LARGE;
-    }
 
     return res;
 }
 
-int decimal_multiply_by_10(s21_decimal *value) {
-    int res = OK;
+res_code decimal_multiply_by_10(s21_decimal* value) {
+    res_code res = OK;
     
     if (value->scale >= max_scale) {
         res = IS_TOO_LARGE;
@@ -111,7 +109,7 @@ int decimal_multiply_by_10(s21_decimal *value) {
     if (res == OK) 
         res = decimal_shift_left(&dec2, 1);  // умножение на 2
     if (res == OK) 
-        res = add_decimal_mantissa(dec1, dec2, value); // Сложение "двинутых" мантисс 8 + 2 = 10
+        res = add_decimal_mantissa(dec1, dec2, value); // Сложение "сдвинутых" мантисс 8 + 2 = 10
 
     return res;
 }
@@ -136,23 +134,28 @@ int decimal_alignment(s21_decimal *value_1, s21_decimal *value_2) {
     return res;
 }
 
+s21_decimal s21_mod(s21_decimal value) {
+    s21_decimal res = value;
+    res.is_negative = 0;
+    return res;
+}
 
 // деление на 10 в столбик с остатком
 // value_1 - делимое, quotient - частное, remainder - остаток
 // деление выполняется от старшего бита к младшему
 // результат записывается в quotient, остаток в remainder
-int div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder) {
+res_code div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder) {
     s21_decimal quot = {0};
     s21_decimal ten = {0};
     unsigned rem = 0;
-    int res = OK;
+    res_code res = OK;
 
     quot.bits[3] = value_1.bits[3];
     ten.bits[0] = 10;
 
     if (is_zero(value_1)) {
         res = OK;
-    } else if (s21_is_less(value_1, ten)) {
+    } else if (s21_is_less(s21_mod(value_1), ten)) {
         //проверка что число 0 < x < 10
         if (value_1.scale == 28) {
             res = IS_TOO_SMALL;    // деление на 10 невозможно. Число слишком маленькое
@@ -213,10 +216,12 @@ int div_mantissa(const s21_decimal value_1, s21_decimal value_2, s21_decimal* qu
 }
 
 
+// ФУНКЦИИ ПЕЧАТИ НА ЭКРАН: ____________________________________________________________________
 
-
-// временные функции для печати на экран
-
+void print_italic_1()
+{
+    printf("\033[3m1\033[0m");
+}
 
 // выводит на экран  число типа unsigned int в двоичной записи    -> *((unsigned*)&num)
 void printBinary(unsigned num) {
@@ -224,7 +229,7 @@ void printBinary(unsigned num) {
         if (((num >> i) & 1) == 0) {
              printf("0");
         } else {
-            printf("\033[3m1\033[0m");
+            print_italic_1();
         }
         // printf("%d", (num >> i) & 1);
         if (i % bits_in_byte == 0) printf(" ");

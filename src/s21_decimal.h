@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>   // для конвертации из float в decimal
 #include <limits.h>   // для граничных значений типов (при преобразованиях)
-#include <math.h>     // для степеней
 
 // константы
 #define INTS_IN_DECIMAL 4
@@ -90,32 +89,33 @@ int s21_negate(s21_decimal value, s21_decimal *result);
 
 // Функции для работы с s21_decimal
 void make_zero_decimal(s21_decimal* value);
-int is_zero(s21_decimal const value);                                                    // Проверка на ноль
-int get_bit(s21_decimal value, int bit_index);                                           // Получение значения бита по индексу
-void set_bit(s21_decimal *value, int bit_index, int bit_value);                          // Установка значения бита по индексу
-int decimal_shift_left(s21_decimal *value, unsigned shift);                              // Смещение битов влево на Shift
-int add_decimal_mantissa(s21_decimal value_1, s21_decimal value_2, s21_decimal *result); // Сложение мантисс двух чисел
-int decimal_multiply_by_10(s21_decimal *value);                                           // Умножение decimal на 10
-int div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder);    // Деление decimal на 10 с остатком
-int decimal_aligment(s21_decimal *value_1, s21_decimal *value_2);                        // Выравнивание scale двух decimal чисел
+int is_zero(const s21_decimal value);                                                       // Проверка на ноль
+int get_bit(s21_decimal value, int bit_index);                                              // Получение значения бита по индексу
+void set_bit(s21_decimal *value, int bit_index, int bit_value);                             // Установка значения бита по индексу
+int decimal_shift_left(s21_decimal *value, unsigned shift);                                 // Смещение битов влево на Shift
+int add_decimal_mantissa(s21_decimal value_1, s21_decimal value_2, s21_decimal *result);    // Сложение мантисс двух чисел
+res_code decimal_multiply_by_10(s21_decimal* value);                                        // Умножение decimal на 10
+res_code div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *remainder);  // Деление decimal на 10 с остатком
+int decimal_aligment(s21_decimal *value_1, s21_decimal *value_2);                           // Выравнивание scale двух decimal чисел
 int div_mantissa(const s21_decimal value_1, s21_decimal value_2, s21_decimal* quotient, s21_decimal* remainder); // Деление мантисс двух decimal чисел
+s21_decimal s21_mod(s21_decimal value);                                                     //возвращает модуль s21_decimal
 
 // Функции для работы с big_decimal
 s21_bool bigdec_is_zero(big_decimal const value);                                       // Проверка на ноль
 void bigdec_get_correct_offset(unsigned bit_index, unsigned* byte_index, unsigned* bit_offset);
 int bigdec_get_bit(big_decimal value, unsigned bit_index);
 void bigdec_set_bit(big_decimal *value, unsigned bit_index, unsigned bit_value);
-int bigdec_shift_left(big_decimal *value, unsigned shift);
+res_code bigdec_shift_left(big_decimal *value, const unsigned shift);
 res_code bigdec_shift_right(big_decimal *value, const unsigned shift);
-void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result); //Сложение мантисс
-int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result);  //вычитание мантисс
-int bigdec_multiply_by_10(big_decimal *value);
-int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result);  //деление мантисс
+void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal* result); // Сложение мантисс
+int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal* result);  // вычитание мантисс
+res_code bigdec_multiply_by_10(big_decimal* value);
+int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal* result);  // деление мантисс
 res_code bigdec_div_by_10(big_decimal* value);                                           // деление на 10 нацело
-int bigdec_alignment(big_decimal *value_1, big_decimal *value_2);
-int bigdec_comparison_mantissa(big_decimal, big_decimal);                                //сравнение -1:первое меньше, 0:равны, 1:первое больше
-int decimal_to_bigdec(s21_decimal dec, big_decimal *big_dec);                            //Конвертация s21_decimal to big_decimal
-int bigdec_to_decimal(big_decimal big_dec, s21_decimal *dec);                            //Конвертация big_decimal to s21_decimal
+void bigdec_alignment(big_decimal* value_1, big_decimal* value_2);
+int bigdec_comparison(big_decimal value_1, big_decimal value_2);                         // сравнение -1:первое меньше, 0:равны, 1:первое больше
+res_code decimal_to_bigdec(s21_decimal dec, big_decimal* big_dec);                       // Конвертация s21_decimal to big_decimal
+res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec);                       // Конвертация big_decimal to s21_decimal
 
 // временные функции для печати
 void printBinary(unsigned int x);
@@ -126,3 +126,4 @@ void print_s21_decimal(const s21_decimal value);
 int string_to_decimal(const char* str, s21_decimal* result);
 
 #endif
+
