@@ -69,7 +69,6 @@ void make_zero_bigdec(big_decimal* bd)
 
 // Сложение мантисс двух чисел
 void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
-
     make_zero_bigdec(result);
     unsigned memo = 0;
     unsigned i = 0;
@@ -87,6 +86,23 @@ void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *
     bigdec_set_bit(result, i, memo);
 }
 
+//вычитание мантисс
+int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
+    unsigned znach=0;
+    big_decimal one = { {1, 0, 0, 0, 0, 0, 0} };
+    big_decimal vich_1 = {0};
+    for(unsigned i=0; i<bits_in_big_mantissa; i++){
+        if(bigdec_get_bit(value_1, i) ) znach = i;
+    }
+    for(unsigned i=0; i<znach+1; i++){
+        bigdec_set_bit(&value_2, i, bigdec_get_bit(value_2, i)  ? 0: 1);
+    }
+    bigdec_add_mantissa(value_2, one, &vich_1);
+    bigdec_add_mantissa(value_1, vich_1, result);
+    bigdec_set_bit(result, znach+1, 0);
+    return 0;
+}
+
 res_code bigdec_multiply_by_10(big_decimal* value) {
     big_decimal dec1 = *value; 
     big_decimal dec2 = *value; 
@@ -94,8 +110,8 @@ res_code bigdec_multiply_by_10(big_decimal* value) {
     res_code res = bigdec_shift_left(&dec1, 3);   // умножение на 8
     if (res == OK)
     {
-         bigdec_shift_left(&dec2, 1);             // умножение на 2
-         bigdec_add_mantissa(dec1, dec2, value);  // cложение "cдвинутых" мантисс 8 + 2 = 10
+        bigdec_shift_left(&dec2, 1);             // умножение на 2
+        bigdec_add_mantissa(dec1, dec2, value);  // cложение "cдвинутых" мантисс 8 + 2 = 10
         value->is_negative = is_negative;     
     }
     return res;
@@ -182,23 +198,6 @@ res_code decimal_to_bigdec(s21_decimal dec, big_decimal *big_dec) {
     return OK;
 } 
 
-//вычитание мантисс
-int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
-    unsigned znach=0;
-    big_decimal one = { {1, 0, 0, 0, 0, 0, 0} };
-    big_decimal vich_1 = {0};
-    for(unsigned i=0; i<bits_in_big_mantissa; i++){
-        if(bigdec_get_bit(value_1, i) ) znach = i;
-    }
-    for(unsigned i=0; i<znach+1; i++){
-        bigdec_set_bit(&value_2, i, bigdec_get_bit(value_2, i)  ? 0: 1);
-    }
-    bigdec_add_mantissa(value_2, one, &vich_1);
-    bigdec_add_mantissa(value_1, vich_1, result);
-    bigdec_set_bit(result, znach+1, 0);
-    return 0;
-}
-
 //деление мантисс
 int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
     big_decimal ostatok;
@@ -283,7 +282,7 @@ res_code bigdec_div_by_10(big_decimal* value){
     return OK;
 }
 
-int max_nonzero_bit(big_decimal value) {
+unsigned max_nonzero_bit(big_decimal value) {
     unsigned max_bit = 0;
     
     for(unsigned i = 0; i < bits_in_big_mantissa; i++)
@@ -295,17 +294,24 @@ int max_nonzero_bit(big_decimal value) {
 res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec) {
     res_code res;
     const big_decimal ten = { {10, 0, 0, 0, 0, 0, 0} };
-    while(big_dec.scale>max_scale){ 
-        if(max_nonzero_bit(big_dec)<95) bigdec_div_mantissa(big_dec, ten, &big_dec);
-        else bigdec_div_by_10(&big_dec);
-        big_dec.scale --;
+
+    if(max_nonzero_bit(big_dec) - big_dec.scale == 95) {
+        bigdec_round(&big_dec);
     }
 
-    if(big_dec.scale==0 && max_nonzero_bit(big_dec)>95) res = IS_TOO_LARGE;
-    if(big_dec.scale>max_scale && big_dec.mantissa[0]<10) res = IS_TOO_SMALL; 
-    //if(big_dec.scale<=28 && big_dec_znach(big_dec)>95) //то банковское округление если влезет
+    if (big_dec.scale==0 && max_nonzero_bit(big_dec)>95) 
+        res = IS_TOO_LARGE;
+    
+    if (big_dec.scale - max_nonzero_bit(big_dec) > max_scale)
+        res = IS_TOO_SMALL;
 
-    if(big_dec.scale<29 && max_nonzero_bit(big_dec)<96) { //!!!!
+    while(big_dec.scale>max_scale){ 
+        if(max_nonzero_bit(big_dec)<95) bigdec_div_mantissa(big_dec, ten, &big_dec);
+        else {bigdec_div_by_10(&big_dec); big_dec.scale --;}
+        
+    }
+
+    if (big_dec.scale<29 && max_nonzero_bit(big_dec)<96) { //!!!!
         dec->low = big_dec.mantissa[0];
         dec->middle = big_dec.mantissa[1];
         dec->high = big_dec.mantissa[2];
@@ -317,4 +323,31 @@ res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec) {
     }
 
     return res;
+}
+
+//умножение мантисс big_decimal
+void bigdec_mul_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
+    big_decimal val = {0}, res = {0};
+    for(unsigned i=0; i<bits_in_big_mantissa; i++){        
+        if(bigdec_get_bit(value_2, i) ) {
+            val= value_1;
+            bigdec_shift_left(&val, i);
+            bigdec_add_mantissa(res, val, result);
+            res = *result;
+        }
+    }
+}
+
+void bigdec_round(big_decimal *value) {
+    const big_decimal one_left = { {0, 0, 0, 0, 0, 0, 0x80000000} };
+    big_decimal one = { {1, 0, 0, 0, 0, 0, 0} };
+
+    big_decimal a = *value;
+    bigdec_shift_left(&a, bits_in_big_mantissa-a.scale);
+    bigdec_shift_right(value, a.scale);
+    value->scale = 0;
+    if(bigdec_comparison(a, one_left)==1) bigdec_add_mantissa(*value, one, value); 
+    if(bigdec_comparison(a, one_left)==0 && bigdec_get_bit(*value, 0)) bigdec_add_mantissa(*value, one, value); 
+
+
 }

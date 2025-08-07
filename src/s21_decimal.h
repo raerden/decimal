@@ -116,6 +116,9 @@ void bigdec_alignment(big_decimal* value_1, big_decimal* value_2);
 int bigdec_comparison(big_decimal value_1, big_decimal value_2);                         // сравнение -1:первое меньше, 0:равны, 1:первое больше
 res_code decimal_to_bigdec(s21_decimal dec, big_decimal* big_dec);                       // Конвертация s21_decimal to big_decimal
 res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec);                       // Конвертация big_decimal to s21_decimal
+void bigdec_mul_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result);
+void bigdec_round(big_decimal *value);
+unsigned max_nonzero_bit(big_decimal value);
 
 // временные функции для печати
 void printBinary(unsigned int x);

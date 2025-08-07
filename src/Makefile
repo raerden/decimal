@@ -24,13 +24,16 @@ GCOV_DIR = gcov_report
 all: clean s21_decimal.a
 
 s21_decimal.a: $(OBJ)
-	ar rcs $@ $^
-	ranlib $@
+	@echo "*\c";
+	@ar rcs $@ $^
+	@echo "*\c";
+	@ranlib $@
 
 $(TEST_EXEC): 
-	checkmk $(TESTS_CHECK) > $(UNIT_TEST_DIR)/$(TESTS_C)
-	$(CC) $(CFLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) -o $@ s21_decimal.a $(LDFLAGS)
-	./$(TEST_EXEC)
+	@echo "*\c";
+	@checkmk $(TESTS_CHECK) > $(UNIT_TEST_DIR)/$(TESTS_C)
+	@echo "*\c";
+	@$(CC) $(CFLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) -o $@ s21_decimal.a $(LDFLAGS)
 
 gcov_report: CFLAGS += $(GCOV_FLAGS)
 gcov_report: clean
@@ -48,14 +51,16 @@ gcov_report: clean
 
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $< -o $@
+	@echo "*\c";
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 test: all $(TEST_EXEC)
-	./$(TEST_EXEC)
+	@echo "*";
+	@./$(TEST_EXEC)
 
 clean:
-	rm -rf $(UNIT_TEST_DIR)/$(TESTS_C) $(TEST_EXEC) $(GCOV_DIR)
-	rm -rf $(OBJ_DIR) s21_decimal.a
+	@rm -rf $(UNIT_TEST_DIR)/$(TESTS_C) $(TEST_EXEC) $(GCOV_DIR)
+	@rm -rf $(OBJ_DIR) s21_decimal.a
 
 cpptest:
 	cppcheck --enable=all --suppress=missingIncludeSystem *.h

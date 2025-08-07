@@ -152,7 +152,7 @@ res_code div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *r
 
     quot.bits[3] = value_1.bits[3];
     ten.bits[0] = 10;
-
+    
     if (is_zero(value_1)) {
         res = OK;
     } else if (s21_is_less(s21_mod(value_1), ten)) {
@@ -175,6 +175,7 @@ res_code div_by_10(const s21_decimal value_1, s21_decimal *quotient, unsigned *r
                 set_bit(&quot, i, 0);
             }
         }
+        
     }
 
     *quotient = quot;

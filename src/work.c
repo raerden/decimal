@@ -1,35 +1,31 @@
 #include "s21_decimal.h"
 
 int main() {
-    s21_decimal dcm1, dcm2, dcm3 = {0};
+    s21_decimal dcm1 = {0};
+    s21_decimal dcm2 = {0};
+    s21_decimal dcm3 = {0};
+    s21_decimal dcm4 = {0};
     big_decimal bdcm1 = {0};
     big_decimal bdcm2 = {0};
     big_decimal bdcm3 = {0};
 
-    bdcm1.bits[0] = 1;
-    bdcm1.scale = 5;
+s21_decimal value_1 = {{7, 0, 0, 0}};
+s21_decimal value_2 = {{5, 0, 0, 0}};
 
-    bdcm2.bits[0] = 1;
-    bdcm2.scale = 0;
+s21_sub(value_1, value_2, &dcm3);
 
-    bigdec_alignment(&bdcm1, &bdcm2);
+printDecimalBinary(dcm3);
+printf("%u\n", dcm3.bits[0]);
 
 
+//    div_mantissa(dcm1,dcm2, &dcm3, &dcm4);
 
-printBigDecimalBinary(bdcm1, "70");
-printf("\n");
-printBigDecimalBinary(bdcm2, "70");
-printf("%u\n", bdcm2.bits[0]);
+//    printf("%d\n", s21_is_less(dcm1,dcm2));
+//    printDecimalBinary(dcm3);
+//    printf("%u\n", dcm3.bits[0]);
+//    printDecimalBinary(dcm4);
+//    printf("%u\n", dcm4.bits[0]);
 
-    // dcm1.bits[0] = 10;
-    // dcm1.is_negative = 1;
-    // // dcm1.bits[0] = 0xFFFFFFFF;
-    // // dcm1.bits[1] = 0xFFFFFFFF;
-    // // dcm1.bits[2] = 0xFFFFFFFF;
-    // unsigned remainder;
-     
-    // div_by_10(dcm1, &dcm2, &remainder);
-    // printDecimalBinary(dcm2);
 
 
 
@@ -62,9 +58,9 @@ printf("%u\n", bdcm2.bits[0]);
     // s21_round(dcm1, &dcm2);
     // printDecimalBinary(dcm2);
     // printf("%u\n", dcm2.bits[0]);
+   
 
-
-    return 0;
+    // Целочисленное деление на 10 с остатком div_by_10
     // // dcm1.bits[0] = 11; // 4294967295
     // dcm1.bits[0] = 0xFFFFFFFF; // 4294967295
     // dcm1.bits[1] = 0xFFFFFFFF; 
@@ -84,6 +80,8 @@ printf("%u\n", bdcm2.bits[0]);
     // print_s21_decimal(dcm2);
     // printf("remainder: %u\n", remainder);
     
+
+
 
 
 // тестирование bigdec_div_mantissa
