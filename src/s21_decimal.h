@@ -105,20 +105,20 @@ s21_bool bigdec_is_zero(big_decimal const value);                               
 void bigdec_get_correct_offset(unsigned bit_index, unsigned* byte_index, unsigned* bit_offset);
 int bigdec_get_bit(big_decimal value, unsigned bit_index);
 void bigdec_set_bit(big_decimal *value, unsigned bit_index, unsigned bit_value);
-res_code bigdec_shift_left(big_decimal *value, const unsigned shift);
-res_code bigdec_shift_right(big_decimal *value, const unsigned shift);
+res_code bigdec_shift_left(big_decimal *value, unsigned shift);
+res_code bigdec_shift_right(big_decimal *value, unsigned shift);
 void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal* result); // Сложение мантисс
 int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal* result);  // вычитание мантисс
 res_code bigdec_multiply_by_10(big_decimal* value);
 int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal* result);  // деление мантисс
-res_code bigdec_div_by_10(big_decimal* value);                                           // деление на 10 нацело
+res_code bigdec_div_by_10(big_decimal* value, unsigned *remainder);                                           // деление на 10 нацело
 void bigdec_alignment(big_decimal* value_1, big_decimal* value_2);
 int bigdec_comparison(big_decimal value_1, big_decimal value_2);                         // сравнение -1:первое меньше, 0:равны, 1:первое больше
 res_code decimal_to_bigdec(s21_decimal dec, big_decimal* big_dec);                       // Конвертация s21_decimal to big_decimal
 res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec);                       // Конвертация big_decimal to s21_decimal
-void bigdec_mul_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result);
+void bigdec_mul_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result); //умножение мантисс
 void bigdec_round(big_decimal *value);
-unsigned max_nonzero_bit(big_decimal value);
+void bigdec_make_zero(big_decimal* value);
 
 // временные функции для печати
 void printBinary(unsigned int x);
@@ -129,4 +129,3 @@ void print_s21_decimal(const s21_decimal value);
 int string_to_decimal(const char* str, s21_decimal* result);
 
 #endif
-

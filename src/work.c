@@ -9,10 +9,10 @@ int main() {
     big_decimal bdcm2 = {0};
     big_decimal bdcm3 = {0};
 
-s21_decimal value_1 = {{7, 0, 0, 0}};
-s21_decimal value_2 = {{5, 0, 0, 0}};
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};
+s21_decimal value_2 = {{0, 0, 0, 0}};
 
-s21_sub(value_1, value_2, &dcm3);
+s21_add(value_1, value_2, &dcm3);
 
 printDecimalBinary(dcm3);
 printf("%u\n", dcm3.bits[0]);

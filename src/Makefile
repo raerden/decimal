@@ -1,10 +1,9 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
-GCOV_FLAGS = -fprofile-arcs -ftest-coverage
+GCOV_FLAGS = -Wno-coverage-invalid-line-number -fprofile-arcs -ftest-coverage
 UNAME := $(shell uname -s)
 LDFLAGS = -lcheck -lm -lpthread
 MEMTEST_EXEC = leaks -atExit --
-#CHECK_FLAG := $(shell pkg-config --cflags --libs check)
 ifeq ($(UNAME), Linux)
     LDFLAGS += -lsubunit
 	MEMTEST_EXEC = valgrind
@@ -24,16 +23,16 @@ GCOV_DIR = gcov_report
 all: clean s21_decimal.a
 
 s21_decimal.a: $(OBJ)
-	@echo "*\c";
-	@ar rcs $@ $^
-	@echo "*\c";
-	@ranlib $@
+#	@echo "*\c";
+	ar rcs $@ $^
+#	@echo "*\c";
+	ranlib $@
 
 $(TEST_EXEC): 
-	@echo "*\c";
-	@checkmk $(TESTS_CHECK) > $(UNIT_TEST_DIR)/$(TESTS_C)
-	@echo "*\c";
-	@$(CC) $(CFLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) -o $@ s21_decimal.a $(LDFLAGS)
+#	@echo "*\c";
+	checkmk $(TESTS_CHECK) > $(UNIT_TEST_DIR)/$(TESTS_C)
+#	@echo "*\c";
+	$(CC) $(CFLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) -o $@ s21_decimal.a $(LDFLAGS)
 
 gcov_report: CFLAGS += $(GCOV_FLAGS)
 gcov_report: clean
@@ -50,17 +49,17 @@ gcov_report: clean
 	@echo "=============================================="
 
 $(OBJ_DIR)/%.o: %.c
-	@mkdir -p $(@D)
-	@echo "*\c";
-	@$(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p $(@D)
+#	@echo "*\c";
+	$(CC) $(CFLAGS) -c $< -o $@
 
 test: all $(TEST_EXEC)
-	@echo "*";
-	@./$(TEST_EXEC)
+#	@echo "*";
+	./$(TEST_EXEC)
 
 clean:
-	@rm -rf $(UNIT_TEST_DIR)/$(TESTS_C) $(TEST_EXEC) $(GCOV_DIR)
-	@rm -rf $(OBJ_DIR) s21_decimal.a
+	rm -rf $(UNIT_TEST_DIR)/$(TESTS_C) $(TEST_EXEC) $(GCOV_DIR)
+	rm -rf $(OBJ_DIR) s21_decimal.a
 
 cpptest:
 	cppcheck --enable=all --suppress=missingIncludeSystem *.h

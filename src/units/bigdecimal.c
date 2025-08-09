@@ -44,20 +44,20 @@ void bigdec_set_bit(big_decimal *value, unsigned bit_index, unsigned bit_value) 
 res_code bigdec_shift_left(big_decimal *value, unsigned shift) {
     res_code res = OK;
     int z = shift;
+    int overflow = 0;
     while(z > 0) {
         shift = z > 31 ? 31 : z;  
-            
-        int overflow = 0;
         for (unsigned i = 0; i < ints_in_big_mantissa; i++) {
             unsigned memo = value->bits[i];
             value->bits[i] = (memo << shift) | overflow; // Сдвиг влево с учетом предыдущего переполнения
             overflow = memo >> (bits_in_int - shift);    // Сохраняем переполнение
         }
-        // Если в overflow есть значение для bits[7], возвращаем ошибку переполнения
-        if (overflow)
-            res = OUT_OF_RANGE; 
+        
         z = z - shift;    
     }
+    // Если в overflow есть значение для bits[7], возвращаем ошибку переполнения
+    if (overflow)
+        res = OUT_OF_RANGE; 
     return res;
 }
 
@@ -69,6 +69,7 @@ void make_zero_bigdec(big_decimal* bd)
 
 // Сложение мантисс двух чисел
 void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
+
     make_zero_bigdec(result);
     unsigned memo = 0;
     unsigned i = 0;
@@ -86,23 +87,6 @@ void bigdec_add_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *
     bigdec_set_bit(result, i, memo);
 }
 
-//вычитание мантисс
-int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
-    unsigned znach=0;
-    big_decimal one = { {1, 0, 0, 0, 0, 0, 0} };
-    big_decimal vich_1 = {0};
-    for(unsigned i=0; i<bits_in_big_mantissa; i++){
-        if(bigdec_get_bit(value_1, i) ) znach = i;
-    }
-    for(unsigned i=0; i<znach+1; i++){
-        bigdec_set_bit(&value_2, i, bigdec_get_bit(value_2, i)  ? 0: 1);
-    }
-    bigdec_add_mantissa(value_2, one, &vich_1);
-    bigdec_add_mantissa(value_1, vich_1, result);
-    bigdec_set_bit(result, znach+1, 0);
-    return 0;
-}
-
 res_code bigdec_multiply_by_10(big_decimal* value) {
     big_decimal dec1 = *value; 
     big_decimal dec2 = *value; 
@@ -110,8 +94,8 @@ res_code bigdec_multiply_by_10(big_decimal* value) {
     res_code res = bigdec_shift_left(&dec1, 3);   // умножение на 8
     if (res == OK)
     {
-        bigdec_shift_left(&dec2, 1);             // умножение на 2
-        bigdec_add_mantissa(dec1, dec2, value);  // cложение "cдвинутых" мантисс 8 + 2 = 10
+         bigdec_shift_left(&dec2, 1);             // умножение на 2
+         bigdec_add_mantissa(dec1, dec2, value);  // cложение "cдвинутых" мантисс 8 + 2 = 10
         value->is_negative = is_negative;     
     }
     return res;
@@ -139,22 +123,25 @@ void bigdec_alignment(big_decimal* value_1, big_decimal* value_2) {
 }
 
 // Смещение битов вправо на shift
-res_code bigdec_shift_right(big_decimal *value, const unsigned shift) {
-    res_code  res = OK;
-
-    if (shift > 0) {
-        unsigned overflow = 0;
+res_code bigdec_shift_right(big_decimal *value, unsigned shift) {
+    res_code res = OK;
+    int z = shift;
+    unsigned overflow = 0;
+    while(z > 0) {
+        shift = z > 31 ? 31 : z;
+        
+        
         for (int i = ints_in_big_mantissa - 1; i >= 0; i--) {
             unsigned memo = value->bits[i];
             value->bits[i] = overflow | (memo >> shift); // Сдвиг вправо с учетом предыдущего бита
             overflow = memo << (bits_in_int - shift);    // Сохраняем правую часть текущего бита
         }
 
-        // Если в overflow есть значение для bits[7], возвращаем ошибку переполнения
-        if (overflow != 0)
-            res = OUT_OF_RANGE; 
+        z = z - shift;        
     }
-
+    // Если в overflow есть значение для bits[7], возвращаем ошибку переполнения
+    if (overflow != 0)
+        res = OUT_OF_RANGE; 
     return res;
 }
 
@@ -198,12 +185,34 @@ res_code decimal_to_bigdec(s21_decimal dec, big_decimal *big_dec) {
     return OK;
 } 
 
+//вычитание мантисс
+int bigdec_sub_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
+    unsigned znach=0;
+    big_decimal one = { {1, 0, 0, 0, 0, 0, 0} };
+    big_decimal vich_1 = {0};
+    for(unsigned i=0; i<bits_in_big_mantissa; i++){
+        if(bigdec_get_bit(value_1, i) ) znach = i;
+    }
+    for(unsigned i=0; i<znach+1; i++){
+        bigdec_set_bit(&value_2, i, bigdec_get_bit(value_2, i)  ? 0: 1);
+    }
+    bigdec_add_mantissa(value_2, one, &vich_1);
+    bigdec_add_mantissa(value_1, vich_1, result);
+    bigdec_set_bit(result, znach+1, 0);
+    return 0;
+}
+
 //деление мантисс
 int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result) {
-    big_decimal ostatok;
+    bigdec_make_zero(result);
+    value_1.is_negative = 0;
+    value_2.is_negative = 0;
+    big_decimal ostatok = value_1;
     unsigned ost = value_1.bits[0] | value_1.bits[1] | value_1.bits[2] | value_1.bits[3] | value_1.bits[4] | value_1.bits[5] | value_1.bits[6] ;
     unsigned znach_1, znach_2, flag = 0;
     int shift;
+
+
 
     for(unsigned i=0; i<bits_in_big_mantissa; i++){
         if(bigdec_get_bit(value_1, i) ) znach_1 = i;
@@ -226,26 +235,44 @@ int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *r
             bigdec_set_bit(result, 0, 0);
         }
 
-        if(shift>0 && ost==0)
+        if(shift>=0 && ost==0)
             bigdec_shift_left(result, shift);
 
-        
-
-        if(shift>=0 && ost!=0){bigdec_shift_right(&value_2, 1);} 
-        if(shift<0 && ost!=0) {bigdec_shift_left(&ostatok, 1); result->scale++;}
 
         shift--;
+        if(shift>=0 && ost!=0){bigdec_shift_right(&value_2, 1);} 
+        if(shift<0 && ost!=0) { bigdec_shift_left(&ostatok, 1); result->scale++;}
 
         flag = bigdec_get_bit(*result, bits_in_big_mantissa-1);
         value_1 = ostatok;
+
+        // printf("%d\nshift\n", shift);
+        // printf("%d\nval1\n", ost);
+        // printBigDecimalBinary(value_1, "");
+        // printf("%d\nval2\n", ost);
+        // printBigDecimalBinary(value_2, "");
+        // printf("res\n");
+        // printBigDecimalBinary(*result, "");
+
     }
+
+
+    unsigned scale = result->scale;
+    for(unsigned i = 0; i<scale; i++){
+        bigdec_multiply_by_10(result);
+    }
+    bigdec_shift_right(result, scale);  
+    result->scale = scale;
+
+    // printf ("res\n");
+    // printBigDecimalBinary(*result, "");
 
     return 0;
 }
 
-res_code bigdec_div_by_10(big_decimal* value){
+res_code bigdec_div_by_10(big_decimal* value, unsigned *remainder){
     big_decimal result = {0};
-    big_decimal ostatok;
+    big_decimal ostatok = {0};
     big_decimal value_1 = *value;
     unsigned ost = value_1.bits[0] | value_1.bits[1] | value_1.bits[2] | value_1.bits[3] | value_1.bits[4] | value_1.bits[5] | value_1.bits[6] ;
     unsigned znach_1, flag = 0;
@@ -278,11 +305,11 @@ res_code bigdec_div_by_10(big_decimal* value){
         
     }
     for(int i = 0; i>INTS_IN_BIGDECIMAL-1; i++) value->bits[i] = result.bits[i];
-
+    *remainder = ost;
     return OK;
 }
 
-unsigned max_nonzero_bit(big_decimal value) {
+int max_nonzero_bit(big_decimal value) {
     unsigned max_bit = 0;
     
     for(unsigned i = 0; i < bits_in_big_mantissa; i++)
@@ -292,26 +319,29 @@ unsigned max_nonzero_bit(big_decimal value) {
 }
 
 res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec) {
-    res_code res;
+    make_zero_decimal(dec);
+    res_code res = -1;
     const big_decimal ten = { {10, 0, 0, 0, 0, 0, 0} };
+    big_decimal res_ = {0};
+    unsigned scale_, ost;
 
-    if(max_nonzero_bit(big_dec) - big_dec.scale == 95) {
-        bigdec_round(&big_dec);
-    }
+    while((big_dec.scale>max_scale || max_nonzero_bit(big_dec)>95) && res == -1 ){   
 
-    if (big_dec.scale==0 && max_nonzero_bit(big_dec)>95) 
-        res = IS_TOO_LARGE;
-    
-    if (big_dec.scale - max_nonzero_bit(big_dec) > max_scale)
-        res = IS_TOO_SMALL;
+        if(big_dec.scale==1 && max_nonzero_bit(big_dec)>95) {bigdec_round(&big_dec); big_dec.scale--; }
 
-    while(big_dec.scale>max_scale){ 
-        if(max_nonzero_bit(big_dec)<95) bigdec_div_mantissa(big_dec, ten, &big_dec);
-        else {bigdec_div_by_10(&big_dec); big_dec.scale --;}
+        if(max_nonzero_bit(big_dec)>95 && big_dec.scale==0) return IS_TOO_LARGE;
+        if(big_dec.bits[0]<10 && big_dec.scale> max_scale && max_nonzero_bit(big_dec)<4) return IS_TOO_SMALL;
         
-    }
+        if(max_nonzero_bit(big_dec)<96) {
+            bigdec_div_mantissa(big_dec, ten, &res_);
+            scale_ = big_dec.scale-1;
+            big_dec.scale = scale_ + res_.scale;
+            for(unsigned i = 0; i< ints_in_big_mantissa; i--) { big_dec.bits[i]=res_.bits[i]; res_.bits[i]=0;}
+        }
+        else {bigdec_div_by_10(&big_dec, &ost); big_dec.scale --;};
+    } 
 
-    if (big_dec.scale<29 && max_nonzero_bit(big_dec)<96) { //!!!!
+    if(big_dec.scale<29 && max_nonzero_bit(big_dec)<96 && res == -1) { //!!!!
         dec->low = big_dec.mantissa[0];
         dec->middle = big_dec.mantissa[1];
         dec->high = big_dec.mantissa[2];
@@ -339,15 +369,17 @@ void bigdec_mul_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *
 }
 
 void bigdec_round(big_decimal *value) {
-    const big_decimal one_left = { {0, 0, 0, 0, 0, 0, 0x80000000} };
     big_decimal one = { {1, 0, 0, 0, 0, 0, 0} };
-
+    unsigned ost;
     big_decimal a = *value;
-    bigdec_shift_left(&a, bits_in_big_mantissa-a.scale);
-    bigdec_shift_right(value, a.scale);
-    value->scale = 0;
-    if(bigdec_comparison(a, one_left)==1) bigdec_add_mantissa(*value, one, value); 
-    if(bigdec_comparison(a, one_left)==0 && bigdec_get_bit(*value, 0)) bigdec_add_mantissa(*value, one, value); 
+    bigdec_div_by_10(value, &ost);
 
+    if((bigdec_get_bit(*value, 0) && ost>=5) || (!bigdec_get_bit(*value, 0) && ost >5)) 
+        bigdec_add_mantissa(a, one, value);
 
+}
+
+void bigdec_make_zero(big_decimal* value) {
+    for (unsigned i = 0; i <= ints_in_big_mantissa; i++ )
+        value->bits[i] = 0;
 }
