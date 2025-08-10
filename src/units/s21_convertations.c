@@ -1,6 +1,7 @@
 #include "../s21_decimal.h"
 
 // Функции для проверки состояния числа______________________________________________
+
 s21_bool is_nan(float value)                       // Проверка на NaN (не число)
 {
     return (value == value)?FALSE:TRUE;
@@ -33,18 +34,21 @@ int s21_from_int_to_decimal(int src, s21_decimal *dst)
 {
     if (!dst) return CONVERTATION_ERR;
     make_zero_decimal(dst);
-    s21_bool src_is_min_int = (src==INT_MIN);
-    if (src < 0)
+    if (src != 0)
     {
-        dst->is_negative = TRUE;
-        if (src_is_min_int)            // INT_MIN == -2147483648
-            src++;                     // INT_MAX == 2147483647 поэтому сперва нужно уменьшить абсолютное значение на 1
-        src *= -1;
+        s21_bool src_is_min_int = (src == INT_MIN);
+        if (src < 0)
+        {
+            dst->is_negative = TRUE;
+            if (src_is_min_int)            // INT_MIN == -2147483648
+                src++;                     // INT_MAX == 2147483647 поэтому сперва нужно уменьшить абсолютное значение на 1
+            src *= -1;
+        }
+        if (src_is_min_int)
+            dst->low = (unsigned)src + 1;  // INT_MAX == |INT_MIN|+1
+        else
+            dst->low = (unsigned)src;
     }
-    if (src_is_min_int)
-        dst->low = (unsigned)src + 1;  // INT_MAX == |INT_MIN|+1
-    else
-        dst->low = (unsigned)src;
 
     return OK;
 }
@@ -91,7 +95,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
 
     if (res == OK && !is_small_float(src))
     {
-        if (1/src < 0)       // 1/src по опыту s21_string чтобы не прогадать с малыми значениями float
+        if (src < 0)
         {
             dst->is_negative = TRUE;
             src = -src;
@@ -102,7 +106,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
         unsigned significand = significand_from_float(src, precision, &exp);
     
         exp -= precision;
-        dst->low = (unsigned)significand;             // 7-значное число, точно влезет в low
+        dst->low = significand;             // 7-значное число, точно влезет в low
 
         while (exp > 0 && res == OK)
         // -exp == scale > 0 поэтому нужно уменьшить экспоненту до 0, умножая мантиссу на 10 
@@ -114,7 +118,7 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
 
         if (exp < 0 && res == OK)          // while выше не выполнялся
         {
-            while ((-exp > (int)max_scale) && (res == OK))
+            while ((-exp > (int)max_scale) && (res == OK))   // -exp > 28
             {
                 res = decimal_multiply_by_10(dst);
                 exp++;
@@ -123,6 +127,8 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
             if (res == OK)
                 dst->scale = (unsigned)(-exp);
         }
+
+        if (res != OK) make_zero_decimal(dst);
     }
 
     return (res == OK)?OK:CONVERTATION_ERR;
@@ -131,9 +137,10 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst)
 // Преобразование из s21_decimal в int
 int s21_from_decimal_to_int(s21_decimal src, int *dst)
 {
+    if (!dst) return CONVERTATION_ERR;
     res_code res = OK;
-    if (!dst) res = CONVERTATION_ERR;
-    else
+    *dst = 0;
+    if (!is_zero(src))
     {
         s21_bool is_negative = (src.is_negative)?TRUE:FALSE;
         src.is_negative = 0;
@@ -144,26 +151,23 @@ int s21_from_decimal_to_int(s21_decimal src, int *dst)
             res = s21_truncate(src, &int_dec);
         // int_dec.scale == 0
         if (int_dec.middle || int_dec.high)
-            res = CONVERTATION_ERR;
-        
-        if (res == OK && (int_dec.low <= (unsigned)INT_MAX + 1))
+            res = IS_TOO_LARGE;
+            
+        if (res == OK)
         {
             s21_bool is_min_int = (is_negative && (int_dec.low == (unsigned)INT_MAX + 1));
             if (is_min_int) *dst = INT_MIN;
-            else
+            else if(int_dec.low <= (unsigned)INT_MAX)
             {
                 *dst = int_dec.low;
                 if (is_negative) 
                     *dst *= -1;
             }
-        }
-        else 
-        {
-            *dst = 0;
-            res = CONVERTATION_ERR;
+            else
+                res = IS_TOO_LARGE;
         }
     }
-    return res;
+    return (res == OK)?OK:CONVERTATION_ERR;
 }
 
 long double pow_of_2(const unsigned n)
@@ -197,11 +201,10 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst)
             unsigned scale = src.scale;
             while (scale--) big_float /= 10;
             *dst = (float)big_float;
+            if (src.is_negative) 
+                *dst *= -1;
         }
     }
 
-    if (src.is_negative)
-        *dst *= -1;
-
-    return res;
+    return (res == OK)?OK:CONVERTATION_ERR;
 }

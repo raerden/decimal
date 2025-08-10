@@ -32,7 +32,7 @@ $(TEST_EXEC):
 #	@echo "*\c";
 	checkmk $(TESTS_CHECK) > $(UNIT_TEST_DIR)/$(TESTS_C)
 #	@echo "*\c";
-	$(CC) $(CFLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) -o $@ s21_decimal.a $(LDFLAGS)
+	$(CC) $(CFLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) -o $(UNIT_TEST_DIR)/$@ s21_decimal.a $(LDFLAGS)
 
 gcov_report: CFLAGS += $(GCOV_FLAGS)
 gcov_report: clean
@@ -40,7 +40,7 @@ gcov_report: clean
 	checkmk $(TESTS_CHECK) > $(UNIT_TEST_DIR)/$(TESTS_C)
 	$(CC) $(CFLAGS) $(GCOV_FLAGS) $(UNIT_TEST_DIR)/$(TESTS_C) $(SRC) -o $(GCOV_DIR)/$(TEST_EXEC) $(LDFLAGS)
 	./$(GCOV_DIR)/$(TEST_EXEC)
-	lcov -t "$(TEST_EXEC)" -o $(GCOV_DIR)/coverage.info -c -d . --exclude "*.check"
+	lcov -t "$(UNIT_TEST_DIR)/$(TEST_EXEC)" -o $(GCOV_DIR)/coverage.info -c -d . --exclude "*.check"
 	genhtml -o $(GCOV_DIR)/report $(GCOV_DIR)/coverage.info
 	@echo "=============================================="
 	@echo "Отчёт покрытия успешно сгенерирован!"
@@ -55,10 +55,10 @@ $(OBJ_DIR)/%.o: %.c
 
 test: all $(TEST_EXEC)
 #	@echo "*";
-	./$(TEST_EXEC)
+	./$(UNIT_TEST_DIR)/$(TEST_EXEC)
 
 clean:
-	rm -rf $(UNIT_TEST_DIR)/$(TESTS_C) $(TEST_EXEC) $(GCOV_DIR)
+	rm -rf $(GCOV_DIR) $(UNIT_TEST_DIR)/$(TESTS_C) $(UNIT_TEST_DIR)/$(TEST_EXEC) 
 	rm -rf $(OBJ_DIR) s21_decimal.a
 
 cpptest:

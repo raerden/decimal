@@ -9,13 +9,24 @@ int main() {
     big_decimal bdcm2 = {0};
     big_decimal bdcm3 = {0};
 
-s21_decimal value_1 = {{1, 0, 0, 0x80000000}};
-s21_decimal value_2 = {{0, 0, 0, 0}};
+// s21_decimal value_1 = {{1, 0, 0, 0}};
+// s21_decimal value_2 = {{4, 0, 0, 0}};
 
-s21_add(value_1, value_2, &dcm3);
+s21_decimal value_1 = {{1, 0, 0, 0}};
+s21_decimal value_2 = {{1, 0, 0, (28 << 16)}}; // деление на очень маленькое число
+
+printDecimalBinary(value_1);
+printf("value_1: %d, Scale: %d\n", value_1.bits[0], value_1.scale);
+printf("\n");
+printDecimalBinary(value_2);
+printf("value_2: %d, Scale: %d\n", value_2.bits[0], value_2.scale);
+printf("\n");
+
+s21_div(value_1, value_2, &dcm3);
 
 printDecimalBinary(dcm3);
-printf("%u\n", dcm3.bits[0]);
+printf("Result: %d, Scale: %d\n", dcm3.bits[0], dcm3.scale);
+
 
 
 //    div_mantissa(dcm1,dcm2, &dcm3, &dcm4);

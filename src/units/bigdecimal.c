@@ -207,65 +207,40 @@ int bigdec_div_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *r
     bigdec_make_zero(result);
     value_1.is_negative = 0;
     value_2.is_negative = 0;
-    big_decimal ostatok = value_1;
+    big_decimal ostatok = value_1;;
     unsigned ost = value_1.bits[0] | value_1.bits[1] | value_1.bits[2] | value_1.bits[3] | value_1.bits[4] | value_1.bits[5] | value_1.bits[6] ;
-    unsigned znach_1, znach_2, flag = 0;
-    int shift;
-
-
-
-    for(unsigned i=0; i<bits_in_big_mantissa; i++){
-        if(bigdec_get_bit(value_1, i) ) znach_1 = i;
-    }
-    for(unsigned i=0; i<bits_in_big_mantissa; i++){
-        if(bigdec_get_bit(value_2, i) ) znach_2 = i;
-    }
-    shift = znach_1-znach_2;
-    bigdec_shift_left(&value_2, shift);
+    unsigned flag = 0;
+    int shift, scale = 0;
 
     while (ost!=0 && flag==0 )
-    {   bigdec_shift_left(result, 1);
-
-        if(bigdec_comparison(value_1, value_2)!=-1) {
+    {  
+        shift = max_nonzero_bit(value_1) - max_nonzero_bit(value_2);
+        if(shift>0) bigdec_shift_left(&value_2, shift);
+        
+        while(shift>=0 && ost>0){
+            bigdec_shift_left(result, 1);
+            if(bigdec_comparison(value_1, value_2)!=-1) {
+                
+                bigdec_sub_mantissa(value_1, value_2, &ostatok);
+                ost = ostatok.bits[0] | ostatok.bits[1] | ostatok.bits[2] | ostatok.bits[3] | ostatok.bits[4] | ostatok.bits[5] | ostatok.bits[6] ;
+                bigdec_set_bit(result, 0, 1);
+            } else { 
+                bigdec_set_bit(result, 0, 0);
+            }
             
-            bigdec_sub_mantissa(value_1, value_2, &ostatok);
-            ost = ostatok.bits[0] | ostatok.bits[1] | ostatok.bits[2] | ostatok.bits[3] | ostatok.bits[4] | ostatok.bits[5] | ostatok.bits[6] ;
-            bigdec_set_bit(result, 0, 1);
-        } else { 
-            bigdec_set_bit(result, 0, 0);
-        }
+            if(shift>=0 && ost==0) bigdec_shift_left(result, shift);
+            shift--;
+            if(shift>=0 && ost!=0){bigdec_shift_right(&value_2, 1);}
+            value_1 = ostatok;
+        }    
 
-        if(shift>=0 && ost==0)
-            bigdec_shift_left(result, shift);
-
-
-        shift--;
-        if(shift>=0 && ost!=0){bigdec_shift_right(&value_2, 1);} 
-        if(shift<0 && ost!=0) { bigdec_shift_left(&ostatok, 1); result->scale++;}
+        if(shift<0 && ost!=0) { bigdec_multiply_by_10(&ostatok); scale++;bigdec_multiply_by_10(result);}
 
         flag = bigdec_get_bit(*result, bits_in_big_mantissa-1);
         value_1 = ostatok;
 
-        // printf("%d\nshift\n", shift);
-        // printf("%d\nval1\n", ost);
-        // printBigDecimalBinary(value_1, "");
-        // printf("%d\nval2\n", ost);
-        // printBigDecimalBinary(value_2, "");
-        // printf("res\n");
-        // printBigDecimalBinary(*result, "");
-
-    }
-
-
-    unsigned scale = result->scale;
-    for(unsigned i = 0; i<scale; i++){
-        bigdec_multiply_by_10(result);
-    }
-    bigdec_shift_right(result, scale);  
+    } 
     result->scale = scale;
-
-    // printf ("res\n");
-    // printBigDecimalBinary(*result, "");
 
     return 0;
 }
@@ -277,7 +252,7 @@ res_code bigdec_div_by_10(big_decimal* value, unsigned *remainder){
     unsigned ost = value_1.bits[0] | value_1.bits[1] | value_1.bits[2] | value_1.bits[3] | value_1.bits[4] | value_1.bits[5] | value_1.bits[6] ;
     unsigned znach_1, flag = 0;
     int shift;
-    big_decimal ten = { {10, 0, 0, 0, 0, 0, 0} };
+    big_decimal ten = { {10, 0, 0, 0, 0, 0, 0, 0} };
 
     for(unsigned i=0; i<bits_in_big_mantissa; i++){
         if(bigdec_get_bit(value_1, i) ) znach_1 = i;
@@ -321,7 +296,7 @@ int max_nonzero_bit(big_decimal value) {
 res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec) {
     make_zero_decimal(dec);
     res_code res = -1;
-    const big_decimal ten = { {10, 0, 0, 0, 0, 0, 0} };
+    const big_decimal ten = { {10, 0, 0, 0, 0, 0, 0, 0} };
     big_decimal res_ = {0};
     unsigned scale_, ost;
 
@@ -329,16 +304,17 @@ res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec) {
 
         if(big_dec.scale==1 && max_nonzero_bit(big_dec)>95) {bigdec_round(&big_dec); big_dec.scale--; }
 
-        if(max_nonzero_bit(big_dec)>95 && big_dec.scale==0) return IS_TOO_LARGE;
-        if(big_dec.bits[0]<10 && big_dec.scale> max_scale && max_nonzero_bit(big_dec)<4) return IS_TOO_SMALL;
-        
-        if(max_nonzero_bit(big_dec)<96) {
-            bigdec_div_mantissa(big_dec, ten, &res_);
-            scale_ = big_dec.scale-1;
-            big_dec.scale = scale_ + res_.scale;
-            for(unsigned i = 0; i< ints_in_big_mantissa; i--) { big_dec.bits[i]=res_.bits[i]; res_.bits[i]=0;}
+        if(max_nonzero_bit(big_dec)>95 && big_dec.scale==0) res = IS_TOO_LARGE;
+        else if(big_dec.bits[0]<10 && big_dec.scale> max_scale && max_nonzero_bit(big_dec)<4) res = IS_TOO_SMALL;
+        else {
+            if(max_nonzero_bit(big_dec)<96) {
+                bigdec_div_mantissa(big_dec, ten, &res_);
+                scale_ = big_dec.scale-1;
+                big_dec.scale = scale_ + res_.scale;
+                for(unsigned i = 0; i< ints_in_big_mantissa; i--) { big_dec.bits[i]=res_.bits[i]; res_.bits[i]=0;}
+            }
+            else {bigdec_div_by_10(&big_dec, &ost); big_dec.scale--;}
         }
-        else {bigdec_div_by_10(&big_dec, &ost); big_dec.scale --;};
     } 
 
     if(big_dec.scale<29 && max_nonzero_bit(big_dec)<96 && res == -1) { //!!!!
@@ -374,12 +350,13 @@ void bigdec_round(big_decimal *value) {
     big_decimal a = *value;
     bigdec_div_by_10(value, &ost);
 
-    if((bigdec_get_bit(*value, 0) && ost>=5) || (!bigdec_get_bit(*value, 0) && ost >5)) 
-        bigdec_add_mantissa(a, one, value);
+    if((bigdec_get_bit(*value, 0)&& ost>=5) || (!bigdec_get_bit(*value, 0) && ost >5)) bigdec_add_mantissa(a, one, value);
 
 }
 
-void bigdec_make_zero(big_decimal* value) {
+void bigdec_make_zero(big_decimal* value){
+    {
     for (unsigned i = 0; i <= ints_in_big_mantissa; i++ )
         value->bits[i] = 0;
+}
 }

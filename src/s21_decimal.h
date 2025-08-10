@@ -119,6 +119,7 @@ res_code bigdec_to_decimal(big_decimal big_dec, s21_decimal* dec);              
 void bigdec_mul_mantissa(big_decimal value_1, big_decimal value_2, big_decimal *result); //умножение мантисс
 void bigdec_round(big_decimal *value);
 void bigdec_make_zero(big_decimal* value);
+int max_nonzero_bit(big_decimal value);
 
 // временные функции для печати
 void printBinary(unsigned int x);

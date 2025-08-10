@@ -60,10 +60,10 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result){
 
         if(bigdec_comparison(bd_val1, bd_val2)<0) {
             bigdec_sub_mantissa(bd_val2, bd_val1, &bd_res);
-            bd_res.is_negative = 1;
+            bd_res.is_negative = !value_2.is_negative; 
         } else {
             bigdec_sub_mantissa(bd_val1, bd_val2, &bd_res);
-            bd_res.is_negative = 0;
+            bd_res.is_negative = value_1.is_negative;
         }
         bd_res.scale = bd_val1.scale;
         res = bigdec_to_decimal(bd_res, result);
@@ -84,7 +84,7 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     decimal_to_bigdec(value_2, &bd_val2); 
 
     bigdec_mul_mantissa(bd_val1, bd_val2, &bd_res);
-    bd_res.is_negative = value_1.is_negative ^ value_2.is_negative  ?  1 : 0 ;
+    bd_res.is_negative = value_1.is_negative ^ value_2.is_negative ;
     bd_res.scale = value_1.scale + value_2.scale;
 
     return bigdec_to_decimal(bd_res, result);
@@ -93,21 +93,27 @@ int s21_mul(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
 
 // Деление двух чисел
 int s21_div(s21_decimal value_1, s21_decimal value_2, s21_decimal *result){
+    res_code res = -1;
     make_zero_decimal(result);
 
-    if(is_zero(value_2)) return DIV_BY_ZERO;
+    
+    if(is_zero(value_2)) res = DIV_BY_ZERO;
+    else if(is_zero(value_1)) {res = OK; result->is_negative = value_1.is_negative ^ value_2.is_negative;}
+    else {
+        big_decimal bd_val1 = {0};
+        big_decimal bd_val2 = {0};
+        big_decimal bd_res = {0};
 
-    big_decimal bd_val1 = {0};
-    big_decimal bd_val2 = {0};
-    big_decimal bd_res = {0};
+        decimal_to_bigdec(value_1, &bd_val1); 
+        decimal_to_bigdec(value_2, &bd_val2); 
 
-    decimal_to_bigdec(value_1, &bd_val1); 
-    decimal_to_bigdec(value_2, &bd_val2); 
+        bigdec_div_mantissa(bd_val1, bd_val2, &bd_res);
 
-    bigdec_div_mantissa(bd_val1, bd_val2, &bd_res);
+        bd_res.is_negative = value_1.is_negative ^ value_2.is_negative;
+        bd_res.scale = value_1.scale - value_2.scale + bd_res.scale;
 
-    bd_res.is_negative = value_1.is_negative ^ value_2.is_negative  ?  1 : 0 ;
-    bd_res.scale = value_1.scale - value_2.scale + bd_res.scale;
+        res = bigdec_to_decimal(bd_res, result);
+    }
 
-    return bigdec_to_decimal(bd_res, result);
+    return res;
 } 
