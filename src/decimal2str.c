@@ -6,8 +6,8 @@ int multiply_by_10(s21_decimal *value) {
 
     s21_decimal dec1 = *value; 
     s21_decimal dec2 = *value; 
-    if (res == OK)
-        res = decimal_shift_left(&dec1, 3);  // умножение на 8
+
+    res = decimal_shift_left(&dec1, 3);  // умножение на 8
     if (res == OK) 
         res = decimal_shift_left(&dec2, 1);  // умножение на 2
     if (res == OK) 
@@ -36,19 +36,49 @@ void print_s21_decimal(const s21_decimal value) {
         }
     }
 
+    if (value.scale >= len)
+        len = value.scale + 1;
     // Печатаем число в правильном порядке
+    if (value.is_negative) printf("-");
     for (int i = len - 1; i >= 0; --i) {
+        if (i == value.scale - 1)
+            putchar('.');
         putchar(result[i] + '0');
     }
     putchar('\n');
 }
-/*
-Как это работает:
-    Алгоритм имитирует умножение числа на 2 и прибавление очередного бита (двойчно-десятичное представление).
-    Число хранится в char result[] в десятичной форме, в обратном порядке (младшая цифра в result[0]).
-    При обработке каждого бита: все цифры умножаются на 2, и добавляется текущий бит в младший разряд.
-    Этот метод прост и работает быстро для 96-битных чисел.
-*/
+
+void print_s21_bigdecimal(const big_decimal value) {
+    char result[300] = {0}; 
+    int len = 1; // начинаем с 0
+
+    for (int i = 6; i >= 0; --i) {
+        for (int j = 31; j >= 0; --j) {
+            int carry = (value.bits[i] >> j) & 1;
+
+            for (int k = 0; k < len; ++k) {
+                int val = result[k] * 2 + carry;
+                result[k] = val % 10;
+                carry = val / 10;
+            }
+
+            if (carry) {
+                result[len++] = carry;
+            }
+        }
+    }
+
+    if (value.scale >= len)
+        len = value.scale + 1;
+    // Печатаем число в правильном порядке
+    if (value.is_negative) printf("-");
+    for (int i = len - 1; i >= 0; --i) {
+        if (i == value.scale - 1)
+            putchar('.');
+        putchar(result[i] + '0');
+    }
+    putchar('\n');
+}
 
 // Добавление одной цифры к decimal.  unsigned long long = 64 bit
 int add_digit(s21_decimal* dec, unsigned int digit) {
@@ -68,17 +98,33 @@ int add_digit(s21_decimal* dec, unsigned int digit) {
 int string_to_decimal(const char* str, s21_decimal* result) {
   result->bits[0] = result->bits[1] = result->bits[2] = result->bits[3] = 0;
 
+  if (strchr(str, '.') != NULL) {
+    result->scale = strlen(strchr(str, '.')) - 1;
+  }
+  if (strchr(str, '-') != NULL) {
+    result->is_negative = 1;
+  }
+
   for (const char* p = str; *p != '\0'; p++) {
     char ch = *p;
-    if (ch < '0' || ch > '9') {
-      return 0;  // ошибка: не цифра
-    }
+    if (ch == '.' || ch == '-') {
+        continue;
+    } else {    
+        if (ch < '0' || ch > '9') {
+        return 0;  // ошибка: не цифра и не точка
+        }
 
-    multiply_by_10(result);
-    if (!add_digit(result, ch - '0')) {
-      return 0;  // переполнение
+        multiply_by_10(result);
+        if (!add_digit(result, ch - '0')) {
+        return 0;  // переполнение
+        }
     }
   }
 
   return 1;  // успешно
+}
+
+void print_decimal_to_hex(s21_decimal value_1) {
+    printf("{{0x%08X, 0x%08X, 0x%08X, 0x%08X}};\n", 
+        value_1.bits[0], value_1.bits[1], value_1.bits[2], value_1.bits[3]);
 }

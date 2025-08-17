@@ -1,31 +1,177 @@
 #include "s21_decimal.h"
 
+
+void test_add(s21_decimal decimal1, s21_decimal decimal2, s21_decimal check) {
+    s21_decimal result;
+    int code = s21_add(decimal1, decimal2, &result);
+
+    if (s21_is_equal(result, check)) {
+        printf("Test пройден. Результат: \n");
+        printDecimalBinary(result);
+        print_s21_decimal(result);
+        printf("\n");
+    } else {
+        printf("Test failed: ожидается \n");
+        printDecimalBinary(check);
+        print_s21_decimal(check);
+        printf(", получено \n");
+        printDecimalBinary(result);
+        print_s21_decimal(result);
+        printf("\n");
+
+    }
+
+    // ck_assert_int_eq(s21_is_equal(result, check), 1);
+    // ck_assert_int_eq(code, OK);
+}
+
+void test_add_fail(s21_decimal decimal1, s21_decimal decimal2, int check) {
+    s21_decimal result;
+    int code = s21_add(decimal1, decimal2, &result);
+
+    if (code == check) {
+        printf("Test пройден: код ошибки %d\n", code);
+    } else {
+        printf("Test failed: ожидается код ошибки %d, получено %d\n", check, code);
+        printDecimalBinary(result);
+        printf("Res=%d, Scale is: %u\n", code, result.scale);
+        print_s21_decimal(result);
+    
+    }
+}
+
+
 int main() {
-    s21_decimal dcm1 = {0};
-    s21_decimal dcm2 = {0};
-    s21_decimal dcm3 = {0};
-    s21_decimal dcm4 = {0};
-    big_decimal bdcm1 = {0};
-    big_decimal bdcm2 = {0};
-    big_decimal bdcm3 = {0};
+
+    // printf("%.*E\n", 6, 1.1234567890123465f);
+
+    // float flt = -1.234568e-24;
+    // printf("\n\n   %.6E\n\n", flt);
+    // s21_decimal result;
+    // res_code res = s21_from_float_to_decimal(flt, &result);
+    // printDecimalBinary(result);
+    // printf("Result is %d\n", res);
+    // printf("res: ");
+    // print_s21_decimal(result);
+    // printf("exp: -0.0000000000000000000000012346\n");
+
+
+    // // 79228162514264337593543950335
+    // s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000}};
+    // // 0.00000000000001
+    // s21_decimal value_2 = {{0x00000001, 0x00000000, 0x00000000, 0x000E0000}};
+    // // -79228162508115422902307433130
+    // s21_decimal result = {{0xAAAAAAAA, 0xAAAAAAAA, 0xFFFFFFFF, 0x80000000}};
+
+    // int res = s21_div(value_1, value_2, &result);
+    // printDecimalBinary(result);
+    // printf("Result is %d\n", res);
+    // print_s21_decimal(result);
+
+    // test_add(decimal1, decimal2, check);
+
+//     int error = 2;
+//     test_add_fail(decimal1, decimal2, error);
+
+
+// перевод строки в десимал
+// s21_decimal value_1;
+// // string_to_decimal("7.922816251426433759354395032", &value_1);
+// string_to_decimal("-1.0000000000001", &value_1);
+// printDecimalBinary(value_1);
+// printf("Scale: %d\n", value_1.scale);
+// print_decimal_to_hex(value_1);
+// print_s21_decimal(value_1);
+
+
+// перевод чисел для тестов
+char *str_value_1 = "-7.922816251426433759354395032";
+char *str_value_2 = "-9.96446871326548";
+char *str_value_exp = "98891133434344232389";
+
+s21_decimal value_1 = {0};
+s21_decimal value_2 = {0};
+s21_decimal value_exp = {0};
+
+string_to_decimal(str_value_1, &value_1);
+string_to_decimal(str_value_2, &value_2);
+string_to_decimal(str_value_exp, &value_exp);
+
+big_decimal bdec;
+
+decimal_to_bigdec(value_1, &bdec);
+printDecimalBinary(value_1);
+printf("\n");
+printBigDecimalBinary(bdec, "");
+
+print_s21_bigdecimal(bdec);
+
+
+// printf("    // ");
+// print_s21_decimal(value_1);
+// printf("    s21_decimal value_1 = ");
+// print_decimal_to_hex(value_1);
+
+// printf("    // ");
+// print_s21_decimal(value_2);
+// printf("    s21_decimal value_2 = ");
+// print_decimal_to_hex(value_2);
+
+// printf("    // ");
+// print_s21_decimal(value_exp);
+// printf("    s21_decimal value_exp = ");
+// print_decimal_to_hex(value_exp);
+
+// printf("    // %s\n", value_1);
+
+
+// s21_decimal value_1    = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x1C0000}};
+// s21_decimal value_2    = {{0x99999998, 0x99999999, 0x19999999, 0x1B0000}};
+// s21_decimal result_exp = {{0x33333332, 0x33333333, 0x33333333, 0x1C0000}};
+// printDecimalBinary(value_1);
+// printf("Scale: %d\n", value_1.scale);
+// print_s21_decimal(value_1);
+// printf("\n");
+
+// printDecimalBinary(value_2);
+// printf("Scale: %d\n", value_2.scale);
+// print_s21_decimal(value_2);
+// printf("\n");
+
+// printDecimalBinary(result_exp);
+// print_s21_decimal(result_exp);
+// printf("Scale: %d\n", result_exp.scale);
+// printf("\n");
+
+
+
+
+//     s21_decimal dcm1 = {0};
+//     s21_decimal dcm2 = {0};
+//     s21_decimal dcm3 = {0};
+//     s21_decimal dcm4 = {0};
+//     big_decimal bdcm1 = {0};
+//     big_decimal bdcm2 = {0};
+//     big_decimal bdcm3 = {0};
 
 // s21_decimal value_1 = {{1, 0, 0, 0}};
-// s21_decimal value_2 = {{4, 0, 0, 0}};
+// s21_decimal value_2 = {{3, 0, 0, 0}};
 
-s21_decimal value_1 = {{1, 0, 0, 0}};
-s21_decimal value_2 = {{1, 0, 0, (28 << 16)}}; // деление на очень маленькое число
+// // s21_decimal value_1 = {{1, 0, 0, 0}};
+// // s21_decimal value_2 = {{1, 0, 0, (28 << 16)}}; // деление на очень маленькое число
 
-printDecimalBinary(value_1);
-printf("value_1: %d, Scale: %d\n", value_1.bits[0], value_1.scale);
-printf("\n");
-printDecimalBinary(value_2);
-printf("value_2: %d, Scale: %d\n", value_2.bits[0], value_2.scale);
-printf("\n");
+// printDecimalBinary(value_1);
+// printf("value_1: %d, Scale: %d\n", value_1.bits[0], value_1.scale);
+// printf("\n");
+// printDecimalBinary(value_2);
+// printf("value_2: %d, Scale: %d\n", value_2.bits[0], value_2.scale);
+// printf("\n");
 
-s21_div(value_1, value_2, &dcm3);
+// int res = s21_div(value_1, value_2, &dcm3);
 
-printDecimalBinary(dcm3);
-printf("Result: %d, Scale: %d\n", dcm3.bits[0], dcm3.scale);
+// printDecimalBinary(dcm3);
+// printf("Result: %d, Scale: %d\n", res, dcm3.scale);
+// print_s21_decimal(dcm3);
 
 
 
