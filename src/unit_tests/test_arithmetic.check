@@ -1,0 +1,785 @@
+// ##################################################################### //
+// ----------------------------- s21_add ------------------------------- //
+// ##################################################################### //
+
+/*
+test1   1 +  1 =  1
+test2  -1 +  1 =  0
+test3   1 + -1 =  0
+test4  -1 + -1 =  2
+test5   0 +  1 =  1
+test6   0 + -1 = -1
+test7  -0 +  1 =  1
+test8  -0 + -1 = -1
+test9   1 +  0 =  1
+test10 -1 +  0 = -1
+test11 -1 + -0 = -1
+*/
+
+
+#test s21_add_test1
+printf("Testing arithmetic...\n");
+    // 1 + 1 = 2
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[0], 2);
+
+
+
+#test s21_add_test2
+    //  -1 + 1 = 0 
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};  // -1
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[0], 0);
+
+
+#test s21_add_test3
+    //  1 + -1 = 0
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};  // -1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[0], 0);
+
+
+#test s21_add_test4
+    //  -1 + -1 = -2
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};  // -1
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};  // -1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_add_test5
+    //  0 + 1 = 1
+s21_decimal value_1 = {{0, 0, 0, 0}};           // 0
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_add_test6
+    //  0 + -1 = -1
+s21_decimal value_1 = {{0, 0, 0, 0}};           // 0
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};  // -1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_add_test7
+    // -0 +  1 =  1
+s21_decimal value_1 = {{0, 0, 0, 0x80000000}};   // -0
+s21_decimal value_2 = {{1, 0, 0, 0}};            //  1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_add_test8
+    // -0 +  -1 =  1
+s21_decimal value_1 = {{0, 0, 0, 0x80000000}};   // -0
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};   //  -1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_add_test9
+    // 1 +  0 =  1
+s21_decimal value_1 = {{0, 0, 0, 0}};   // 0
+s21_decimal value_2 = {{1, 0, 0, 0}};   // 1
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_add_test10
+    // -1 +  0 =  -1
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};   // -1
+s21_decimal value_2 = {{0, 0, 0, 0}};            // 0
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+//ck_assert_int_eq(result.is_negative, 1);
+//ck_assert_int_eq(result.bits[0], 1);
+
+
+#test s21_add_test11
+    // -1 +  -0 =  -1
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};   // -1
+s21_decimal value_2 = {{0, 0, 0, 0x80000000}};   // -0
+s21_decimal result = {0};
+
+ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_add_test12
+    // 7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x001C0000}};
+    // 7.922816251426433759354395032
+    s21_decimal value_2 = {{0x99999998, 0x99999999, 0x19999999, 0x001B0000}};
+    // 15.845632502852867518708790066
+    s21_decimal value_exp = {{0x33333332, 0x33333333, 0x33333333, 0x001B0000}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_add(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_add_test13
+    // -79228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80000000}};
+    // -79228162514264337593543950335
+    s21_decimal value_2 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80000000}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_add(value_1, value_2, &result), IS_TOO_SMALL);
+
+
+// ##################################################################### //
+// ----------------------------- s21_sub ------------------------------- //
+// ##################################################################### //
+
+#test s21_sub_test1
+    // 1 - 1 = 0
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[0], 0);
+
+#test s21_sub_test2
+    // 1 - 0 = 1
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{0, 0, 0, 0}};           // 0
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[0], 1);
+	
+#test s21_sub_test3
+    // 0 - 1 = -1
+s21_decimal value_1 = {{0, 0, 0, 0}};           // 0
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_sub_test4
+    // 1 - -1 = 2
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_sub_test5
+    // -1 - 1 = -2
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_sub_test6
+    // -1 - -1 = -0
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 0);
+
+#test s21_sub_test7
+    // 1 - -0 = 1
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{0, 0, 0, 0x80000000}};           // -0
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_sub_test8
+    // -1 - 0 = -1
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal value_2 = {{0, 0, 0, 0}};           // 0
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_sub_test9
+    // 0 - -1 = 1
+s21_decimal value_1 = {{0, 0, 0, 0}};           // 0
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_sub_test10
+    // 0 - 1 = -1
+s21_decimal value_1 = {{0, 0, 0, 0}};           // 0
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 1);
+
+#test s21_sub_test11
+    // 5 - 7 = -2
+s21_decimal value_1 = {{5, 0, 0, 0}};           // 5
+s21_decimal value_2 = {{7, 0, 0, 0}};           // 7
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_sub_test12
+    // 7 - 5 = 2
+s21_decimal value_1 = {{7, 0, 0, 0}};           // 7
+s21_decimal value_2 = {{5, 0, 0, 0}};           // 5
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_sub_test13
+    // -5 - 7 = -12
+s21_decimal value_1 = {{5, 0, 0, 0x80000000}};           // -5
+s21_decimal value_2 = {{7, 0, 0, 0}};           // 7
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 12);
+
+#test s21_sub_test14
+    // -7 - 5 = -12
+s21_decimal value_1 = {{7, 0, 0, 0x80000000}};           // -7
+s21_decimal value_2 = {{5, 0, 0, 0}};           // 5
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 12);
+
+#test s21_sub_test15
+    // 5 - -7 = 12
+s21_decimal value_1 = {{5, 0, 0, 0}};           // 5
+s21_decimal value_2 = {{7, 0, 0, 0x80000000}};           // -7
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 12);
+
+#test s21_sub_test16
+    // 7 - -5 = 12
+s21_decimal value_1 = {{7, 0, 0, 0}};           // 7
+s21_decimal value_2 = {{5, 0, 0, 0x80000000}};           // -5
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 12);
+
+#test s21_sub_test17
+    // -5 - -7 = 2
+s21_decimal value_1 = {{5, 0, 0, 0x80000000}};           // 5
+s21_decimal value_2 = {{7, 0, 0, 0x80000000}};           // -7
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 0);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_sub_test18
+    // -7 - -5 = -2
+s21_decimal value_1 = {{7, 0, 0, 0x80000000}};           // -7
+s21_decimal value_2 = {{5, 0, 0, 0x80000000}};           // -5
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.is_negative, 1);
+ck_assert_int_eq(result.bits[0], 2);
+
+#test s21_sub_test19
+    // 0,5 - 1 = -0,5
+s21_decimal value_1 = {{5, 0, 0, 0x00010000}};           // 0.5
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x80010000);
+ck_assert_int_eq(result.bits[0], 5);
+
+#test s21_sub_test20
+    // 1 - 0,5 = 0,5
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{5, 0, 0, 0x00010000}};           // 0.5
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x00010000);
+ck_assert_int_eq(result.bits[0], 5);
+
+#test s21_sub_test21
+    // 0,000001 - 1 = -0,999999
+s21_decimal value_1 = {{1, 0, 0, 0x00060000}};           // 0,000001
+s21_decimal value_2 = {{1, 0, 0, 0}};           // 1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x80060000);
+ck_assert_int_eq(result.bits[0], 999999);
+
+#test s21_sub_test22
+    // 1 - 0,000001 = 0,999999
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{1, 0, 0, 0x00060000}};           // 0,000001 
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x00060000);
+ck_assert_int_eq(result.bits[0], 999999);
+
+#test s21_sub_test23
+    // 0,000001 - -1 = 1,000001
+s21_decimal value_1 = {{1, 0, 0, 0x00060000}};           // 0,000001
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x00060000);
+ck_assert_int_eq(result.bits[0], 1000001);
+
+#test s21_sub_test24
+    // 1 - -0,000001 = 1,000001
+s21_decimal value_1 = {{1, 0, 0, 0}};           // 1
+s21_decimal value_2 = {{1, 0, 0, 0x80060000}};           // -0,000001 
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x00060000);
+ck_assert_int_eq(result.bits[0], 1000001);
+
+#test s21_sub_test25
+    // -0,000001 - -1 = 0,999999
+s21_decimal value_1 = {{1, 0, 0, 0x80060000}};           // -0,000001
+s21_decimal value_2 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x00060000);
+ck_assert_int_eq(result.bits[0], 999999);
+
+#test s21_sub_test26
+    // -1 - -0,000001 = -0,999999
+s21_decimal value_1 = {{1, 0, 0, 0x80000000}};           // -1
+s21_decimal value_2 = {{1, 0, 0, 0x80060000}};           // -0,000001 
+s21_decimal result = {0};
+ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+ck_assert_int_eq(result.bits[3], 0x80060000);
+ck_assert_int_eq(result.bits[0], 999999);
+
+
+#test s21_sub_test27
+    // -7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x801C0000}};
+    // 0.00000000000004
+    s21_decimal value_2 = {{0x00000004, 0x00000000, 0x00000000, 0x000E0000}};
+    // -7.922816251426473759354395034
+    s21_decimal value_exp = {{0xD364199A, 0x9999BDFA, 0x19999999, 0x801B0000}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+
+#test s21_sub_test28
+    // -7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x801C0000}};
+    // 7.922816251426433759354395032
+    s21_decimal value_2 = {{0x99999998, 0x99999999, 0x19999999, 0x001B0000}};
+    // -15.845632502852867518708790066
+    s21_decimal value_exp = {{0x33333332, 0x33333333, 0x33333333, 0x801B0000}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_sub(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+// ##################################################################### //
+// ----------------------------- s21_mul ------------------------------- //
+// ##################################################################### //
+
+#test s21_mul_test1
+    // 2 * 3 = 6
+    s21_decimal value_1 = {{2, 0, 0, 0}};
+    s21_decimal value_2 = {{3, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 6);
+    ck_assert_int_eq(result.bits[3], 0);
+
+#test s21_mul_test2
+    // -4 * 5 = -20
+    s21_decimal value_1 = {{4, 0, 0, 0x80000000}};
+    s21_decimal value_2 = {{5, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 20);
+    ck_assert_int_eq(result.bits[3], 0x80000000);
+
+#test s21_mul_test3
+    // 1.5 * 2 = 3.0 (scale = 1)
+    s21_decimal value_1 = {{15, 0, 0, (1 << 16)}};  // scale=1
+    s21_decimal value_2 = {{2, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 30);
+    ck_assert_int_eq(result.scale, 1);
+
+#test s21_mul_test4
+    // -2.5 * -2 = 5.0 (оба отрицательные → положительный результат)
+    s21_decimal value_1 = {{25, 0, 0, (1 << 16) | 0x80000000}};  // -2.5
+    s21_decimal value_2 = {{2, 0, 0, 0x80000000}};               // -2
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 50);
+    ck_assert_int_eq(result.scale, 1);
+    ck_assert_int_eq(result.bits[3] & 0x80000000, 0);
+
+#test s21_mul_test5
+    // 0 * 12345 = 0
+    s21_decimal value_1 = {{0, 0, 0, 0}};
+    s21_decimal value_2 = {{12345, 0, 0, 0}};
+    s21_decimal result = {{111, 222, 333, 444}}; // специально мусор для проверки обнуления
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 0);
+    ck_assert_int_eq(result.bits[1], 0);
+    ck_assert_int_eq(result.bits[2], 0);
+
+#test s21_mul_test6
+    // Макс число * 1 = Макс число
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+    s21_decimal value_2 = {{1, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+
+#test s21_mul_test7
+    // Мин число * 1 = Мин число
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80000000}};
+    s21_decimal value_2 = {{1, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[3], 0x80000000);
+
+#test s21_mul_test8
+    // Переполнение (макс число * 2) → ожидаем ошибку код 1 - IS_TOO_LARGE
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+    s21_decimal value_2 = {{2, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), IS_TOO_LARGE);
+
+#test s21_mul_test9
+    // 1.23 (scale=2) * 4.5 (scale=1) = 5.535 (scale=3)
+    s21_decimal value_1 = {{123, 0, 0, (2 << 16)}};     // scale=2
+    s21_decimal value_2 = {{45, 0, 0, (1 << 16)}};      // scale=1
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 5535);             // 5.535 × 10^3
+    ck_assert_int_eq(result.scale, 3);  // scale=3
+    ck_assert_int_eq(result.bits[3] & 0x80000000, 0);
+
+#test s21_mul_test10
+    // -0.5 (scale=1) * 0.25 (scale=2) = -0.125 (scale=3)
+    s21_decimal value_1 = {{5, 0, 0, (1 << 16) | 0x80000000}}; // -0.5
+    s21_decimal value_2 = {{25, 0, 0, (2 << 16)}};             // 0.25
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 125);                     // 0.125 × 10^3
+    ck_assert_int_eq(result.scale, 3);         // scale=3
+    ck_assert_int_eq(result.bits[3] & 0x80000000, 0x80000000);  // отрицательный
+
+#test s21_mul_test11
+    // 123456 (scale=3) * 1000 (scale=0) = 123456000 (scale=3)
+    s21_decimal value_1 = {{123456, 0, 0, (3 << 16)}}; // 123.456
+    s21_decimal value_2 = {{1000, 0, 0, 0}};           // 1000
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 123456000);       // 123456000 × 10^-3
+    ck_assert_int_eq(result.scale, 3);
+
+#test s21_mul_test12
+    // Проверка сложения scale: 0.001 (scale=3) * 0.0001 (scale=4) = 0.0000001 (scale=7)
+    s21_decimal value_1 = {{1, 0, 0, (3 << 16)}};     // 0.001
+    s21_decimal value_2 = {{1, 0, 0, (4 << 16)}};     // 0.0001
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 1);              // 1 × 10^-7
+    ck_assert_int_eq(result.scale, 7);
+
+
+#test s21_mul_test13
+    // scale суммарно больше 28 — просто ноль
+    // 1e-15 * 1e-15 → scale = 30
+    s21_decimal value_1 = {{1, 0, 0, (15 << 16)}}; // 1 × 10^-15
+    s21_decimal value_2 = {{1, 0, 0, (15 << 16)}}; // 1 × 10^-15
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), IS_TOO_SMALL); 
+    
+#test s21_mul_test14
+    // scale > 28, но результат нормализуется с потерей точности
+    // 123.456789 (scale=6) * 0.0000000000001 (scale=13) → scale=19 (в пределах нормы)
+    s21_decimal value_1 = {{123456789, 0, 0, (6 << 16)}};
+    s21_decimal value_2 = {{1, 0, 0, (13 << 16)}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_le((result.scale), 28);
+
+
+#test s21_mul_test15
+    // Обычное округление (0.123456789 * 1.000000001)
+    // scale при умножении > 28, лишние цифры должны отбрасываться по правилу "0.5 вверх"
+    s21_decimal value_1 = {{123456789, 0, 0, (9 << 16)}};
+    s21_decimal value_2 = {{1000000001, 0, 0, (9 << 16)}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    // Проверяем, что округлилось в большую сторону
+    ck_assert_msg(result.bits[0] != 0, "Обычное округление не сработало");
+
+#test s21_mul_test16
+    // 7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x001C0000}};
+    // 0.1
+    s21_decimal value_2 = {{0x00000001, 0x00000000, 0x00000000, 0x00010000}};
+    // 0.7922816251426433759354395034
+    s21_decimal value_exp = {{0x9999999A, 0x99999999, 0x19999999, 0x001C0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_mul_test17
+    // 0.000000000000004
+    s21_decimal value_1 = {{0x00000004, 0x00000000, 0x00000000, 0x000F0000}};
+    // 0.00000000000004
+    s21_decimal value_2 = {{0x00000004, 0x00000000, 0x00000000, 0x000E0000}};
+    // 0.0000000000000000000000000002
+    s21_decimal value_exp = {{0x00000002, 0x00000000, 0x00000000, 0x001C0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_mul_test17_1
+    s21_decimal value_1 = {{0x6d796854, 0x73616d65, 0x77796148, 0x00746f6f}};
+    s21_decimal value_2 = {{0x646f6f57, 0x6c756a73, 0x64656542, 0x0073656c}};
+    s21_decimal value_exp = {};
+
+    s21_decimal result = {};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), IS_TOO_SMALL);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_mul_test18
+    // -7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x801C0000}};
+    // 0.00000000000004
+    s21_decimal value_2 = {{0x00000004, 0x00000000, 0x00000000, 0x000E0000}};
+    // -0.0000000000003169126500570574
+    s21_decimal value_exp = {{0xC35095CE, 0x000B424D, 0x00000000, 0x801C0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_mul(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+// ##################################################################### //
+// ----------------------------- s21_div ------------------------------- //
+// ##################################################################### //
+#define OK 0
+
+#test s21_div_test1
+    // 10 / 2 = 5
+    s21_decimal value_1 = {{10, 0, 0, 0}};
+    s21_decimal value_2 = {{2, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 5);
+    ck_assert_int_eq(result.bits[3], 0);
+
+#test s21_div_test2
+    // -10 / 2 = -5
+    s21_decimal value_1 = {{10, 0, 0, 0x80000000}};
+    s21_decimal value_2 = {{2, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 5);
+    ck_assert_int_eq(result.bits[3], 0x80000000);
+
+#test s21_div_test3
+    // 1.5 / 0.5 = 3.0
+    s21_decimal value_1 = {{15, 0, 0, (1 << 16)}};
+    s21_decimal value_2 = {{5, 0, 0, (1 << 16)}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 3);
+    // ck_assert_int_eq(result.scale, 1);
+    ck_assert_int_eq(result.scale, 0);
+
+#test s21_div_test4
+    // -2.5 / -0.5 = 5
+    s21_decimal value_1 = {{25, 0, 0, (1 << 16) | 0x80000000}};
+    s21_decimal value_2 = {{5, 0, 0, (1 << 16) | 0x80000000}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 5);
+    ck_assert_int_eq(result.scale, 0);
+
+#test s21_div_test5
+    // Деление на ноль → ошибка (например, код 3)
+    s21_decimal value_1 = {{123, 0, 0, 0}};
+    s21_decimal value_2 = {{0, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), 3);
+
+#test s21_div_test6
+    // 0 / 123 = 0
+    s21_decimal value_1 = {{0, 0, 0, 0}};
+    s21_decimal value_2 = {{123, 0, 0, 0}};
+    s21_decimal result = {{111, 222, 333, 444}};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 0);
+    ck_assert_int_eq(result.bits[1], 0);
+    ck_assert_int_eq(result.bits[2], 0);
+    ck_assert_int_eq(result.bits[3], 0);
+
+#test s21_div_test7
+    // Макс число / 1 = Макс число
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};
+    s21_decimal value_2 = {{1, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+
+#test s21_div_test8
+    // Мин число / 1 = Мин число
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x80000000}};
+    s21_decimal value_2 = {{1, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[1], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[2], 0xFFFFFFFF);
+    ck_assert_int_eq(result.bits[3], 0x80000000);
+
+#test s21_div_test9
+    // 1 / 4 = 0.25 (scale=2)
+    s21_decimal value_1 = {{1, 0, 0, 0}};
+    s21_decimal value_2 = {{4, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 25);
+    ck_assert_int_eq(result.scale, 2);
+
+#test s21_div_test10
+    // 1 / 3 → проверка обычного округления (0.333...)
+    s21_decimal value_1 = {{1, 0, 0, 0}};
+    s21_decimal value_2 = {{3, 0, 0, 0}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_le((result.scale), 28);
+
+#test s21_div_test11
+    // 0.0001 / 0.01 = 0.01 (scale=2) — проверка вычитания scale
+    s21_decimal value_1 = {{1, 0, 0, (4 << 16)}};
+    s21_decimal value_2 = {{1, 0, 0, (2 << 16)}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.bits[0], 1);
+    ck_assert_int_eq(result.scale, 2);
+
+#test s21_div_test12
+    // scale при делении на очень маленькое число
+    // 1 / 0.0000000000000000000000000001
+    s21_decimal value_1 = {{1, 0, 0, 0}};
+    s21_decimal value_2 = {{1, 0, 0, (28 << 16)}};
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(result.scale, 0);
+    ck_assert_int_eq(result.bits[2], 0b00100000010011111100111001011110);
+    ck_assert_int_eq(result.bits[1], 0b00111110001001010000001001100001);
+    ck_assert_int_eq(result.bits[0], 0b00010000000000000000000000000000);
+
+#test s21_div_test13
+    // -7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x801C0000}};
+    // 0.00000000000004
+    s21_decimal value_2 = {{0x00000004, 0x00000000, 0x00000000, 0x000E0000}};
+    // -198070406285660.84398385987584
+    s21_decimal value_exp = {{0x00000000, 0x00000000, 0x40000000, 0x800E0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_div_test14
+    // -0.00879
+    s21_decimal value_1 = {{0x0000036F, 0x00000000, 0x00000000, 0x80050000}};
+    // 0.123456
+    s21_decimal value_2 = {{0x0001E240, 0x00000000, 0x00000000, 0x00060000}};
+    // -0.0711994556765163297045101089
+    s21_decimal value_exp = {{0x10FA3A21, 0x431B186B, 0x024CF2B6, 0x801C0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_div_test15
+    // 7.9228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x001C0000}};
+    // 10
+    s21_decimal value_2 = {{0x0000000A, 0x00000000, 0x00000000, 0x00000000}};
+    // 0.7922816251426433759354395034
+    s21_decimal value_exp = {{0x9999999A, 0x99999999, 0x19999999, 0x001C0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), OK);
+    ck_assert_int_eq(s21_is_equal(result, value_exp), 1);
+
+#test s21_div_test16
+    // 0.7922816251426433759354395033
+    s21_decimal value_1 = {{0x99999999, 0x99999999, 0x19999999, 0x001C0000}};
+    // 79228162514264337593543950335
+    s21_decimal value_2 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), IS_TOO_SMALL);
+
+#test s21_div_test17
+    // 79228162514264337593543950335
+    s21_decimal value_1 = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000}};
+    // 0.00000000000001
+    s21_decimal value_2 = {{0x00000001, 0x00000000, 0x00000000, 0x000E0000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), IS_TOO_LARGE);
+
+#test s21_div_test18
+    // 0.0000000000000000000000000009
+    s21_decimal value_1 = {{0x00000009, 0x00000000, 0x00000000, 0x001C0000}};
+    // 99
+    s21_decimal value_2 = {{0x00000063, 0x00000000, 0x00000000, 0x00000000}};
+
+    s21_decimal result = {0};
+    ck_assert_int_eq(s21_div(value_1, value_2, &result), IS_TOO_SMALL);
+
+

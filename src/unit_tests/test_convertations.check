@@ -1,0 +1,1012 @@
+// ##################################################################### //
+// -------------------------- float to decimal-------------------------- //
+// ##################################################################### //
+
+//float numb 0.0003429853520 = +3.429854E-04
+#test float_to_decimal_1
+printf("Testing convertations...\n");
+    float flt = 0.0003429853520f;         // 3.429854E-04
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 3429854);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 10);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb 5.1234567812345E+20 = +5.123457E+20
+#test float_to_decimal_2
+    float flt = 5.1234567812345E+20;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 1255817216);
+    ck_assert_uint_eq(dec.middle, 3325662112);
+    ck_assert_uint_eq(dec.high, 27);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb 17179869189.0 = +1.717987E+10
+#test float_to_decimal_3
+    float flt = 17179869189.0f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 816);
+    ck_assert_uint_eq(dec.middle, 4);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb 17179869184.0 = +1.717987E+10
+#test float_to_decimal_4
+    float flt = 17179869184.0f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 816);
+    ck_assert_uint_eq(dec.middle, 4);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb 8589934592.0 = +8.589935E+09
+#test float_to_decimal_5
+    float flt = 8589934592.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 408);
+    ck_assert_uint_eq(dec.middle, 2);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb 8589934593.0 = +8.589935E+09
+#test float_to_decimal_6
+    float flt = 8589934593.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 408);
+    ck_assert_uint_eq(dec.middle, 2);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb -4294967296.0 = -4.294967296E+09
+#test float_to_decimal_7
+    float flt = -4294967296.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 4294967000);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+//float numb -4.294967296E+09 = -4.294967296E+09
+#test float_to_decimal_8
+    float flt = -4.294967296E+09;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 4294967000);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+//float numb -1.7179869184E+10 = -1.717987E+10
+#test float_to_decimal_9
+    float flt = -1.7179869184E+10;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 816);
+    ck_assert_uint_eq(dec.middle, 4);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+//float numb 123456780000.0 = +1.234568E+11
+#test float_to_decimal_10
+    float flt = 123456780000.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 3197715712);
+    ck_assert_uint_eq(dec.middle, 28);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb -1234560780.0 = -1.234561E+09
+#test float_to_decimal_11
+    float flt = -1234560780.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 1234561000);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+//float numb 2.147483648E+09 = +2.147483648E+09
+#test float_to_decimal_12
+    float flt = 2.147483648E+09;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2147484000);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+//float numb -3.9876545E-22 = -3.987655E-22
+#test float_to_decimal_13
+    float flt = -3.9876545E-22;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 3987655);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+//float numb -9.1234123E-22 = -9.1234124E-22
+#test float_to_decimal_14
+    float flt = -9.1234123E-22;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 9123412);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+// 0.0
+#test float_to_decimal_15
+    float flt = 0.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 123.456f
+#test float_to_decimal_16
+    float flt = 123.456f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 1234560);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 4);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 2.718281828f
+#test float_to_decimal_17
+    float flt = 2.718281828f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2718282);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 6);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 3.141592653f
+#test float_to_decimal_18
+    float flt = 3.141592653f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 3141593);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 6);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 123456789123456789.12345f
+#test float_to_decimal_19
+    float flt = 123456789123456789.12345f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 890978304);
+    ck_assert_uint_eq(dec.middle, 28744526);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 79228152514264337593543950336.123456789123456789f
+#test float_to_decimal_20
+    float flt = 79228152514264337593543950336.123456789123456789f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 1841299456);
+    ck_assert_uint_eq(dec.middle, 2578573407);
+    ck_assert_uint_eq(dec.high, 4294966617);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 2^100 1267650600228229401496703205376
+#test float_to_decimal_21
+    float flt = 1267650600228229401496703205376.0f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 0.0000000000123456789123f
+#test float_to_decimal_22
+    float flt = 0.0000000000123456789123f;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 1234568);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 17);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 0.5
+#test float_to_decimal_23
+    float flt = 0.5;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 5000000);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 7);
+    ck_assert_uint_eq(dec.is_negative, 0); 
+
+// -0.1
+#test float_to_decimal_24
+    float flt = -0.1;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 1000000);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 7);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+// nan
+#test float_to_decimal_25
+    float flt = 0.0/0.00;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// -nan
+#test float_to_decimal_26
+    float flt = NAN;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(-1*flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// -inf
+#test float_to_decimal_27
+    float flt = -5.1/0.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// inf
+#test float_to_decimal_28
+    float flt = 81.12/0.0;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big negative exponent
+#test float_to_decimal_29
+    float flt = 0.000000000000000000000078652464646f;       // 7.86525E-23
+    //printf("\n\n   %.6E\n\n", flt);
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 786525);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big negative exponent
+#test float_to_decimal_30
+    float flt = 1.234568e-29;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big negative exponent
+#test float_to_decimal_31
+    float flt = 9.000000e-29;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big negative exponent
+#test float_to_decimal_32
+    float flt = -1.234568e-24;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 12346);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+// big negative exponent
+#test float_to_decimal_33
+    float flt = 1.999999e-26;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 200);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big negative exponent
+#test float_to_decimal_34
+    float flt = 1.999999e-28;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+#test float_to_decimal_nasa_793
+    // 1.79480092E-26
+    float flt = 1.79480092E-26;
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    // 0.0000000000000000000000000179
+    ck_assert_uint_eq(dec.low, 179);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 0);
+    //s21_decimal decimal_check = {{0xB3, 0x0, 0x0, 0x1C0000}};
+
+#test float_to_decimal_nasa_1057
+    // 2.98218484E-23
+    float flt = 2.98218484E-23;   // 2.98218E-23
+    s21_decimal dec;
+    res_code res = s21_from_float_to_decimal(flt, &dec);
+    ck_assert_int_eq(res, OK);
+    // 0.0000000000000000000000298218
+    ck_assert_uint_eq(dec.low, 298218);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 28);
+    ck_assert_uint_eq(dec.is_negative, 0);
+    //s21_decimal decimal_check = {{0x48CEA, 0x0, 0x0, 0x1C0000}};
+
+ #test float_to_decimal_nasa_75
+     // 9.61645806E-28
+     float flt = 9.61645806E-28;   // 9.616458E-28
+     s21_decimal dec;
+     res_code res = s21_from_float_to_decimal(flt, &dec);
+     ck_assert_int_eq(res, OK);
+     // 0.000000000000000000000000001
+     ck_assert_uint_eq(dec.low, 1);
+     ck_assert_uint_eq(dec.middle, 0);
+     ck_assert_uint_eq(dec.high, 0);
+     ck_assert_uint_eq(dec.scale, 27);
+     ck_assert_uint_eq(dec.is_negative, 0);
+     //s21_decimal decimal_check = {{0x1, 0x0, 0x0, 0x1B0000}};
+
+// ##################################################################### //
+// -------------------------- int to decimal---------------------------- //
+// ##################################################################### //
+
+// 0 (zero)
+#test int_to_decimal_1
+    int n = 0;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 0);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// 15
+#test int_to_decimal_2
+    int n = 15;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 15);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+    
+// -30
+#test int_to_decimal_3
+    int n = -30;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 30);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+// min int
+#test int_to_decimal_4
+    int n = -2147483648;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2147483648);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+// max int
+#test int_to_decimal_5
+    int n = 2147483647;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2147483647);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+#test int_to_decimal_6
+    int n = -7483648;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 7483648);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+#test int_to_decimal_7
+    int n = 21474837;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 21474837);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big
+#test int_to_decimal_8
+    int n = 2147483621;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2147483621);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 0);
+
+// big negative
+#test int_to_decimal_9
+    int n = -2145483533;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(n, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 2145483533);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+#test int_to_decimal_10
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(-214748365, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 214748365);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+#test int_to_decimal_11
+    //int n = -2147483649;
+    s21_decimal dec;
+    res_code res = s21_from_int_to_decimal(-214748364, &dec);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(dec.low, 214748364);
+    ck_assert_uint_eq(dec.middle, 0);
+    ck_assert_uint_eq(dec.high, 0);
+    ck_assert_uint_eq(dec.scale, 0);
+    ck_assert_uint_eq(dec.is_negative, 1);
+
+// ##################################################################### //
+// -------------------------- decimal to int---------------------------- //
+// ##################################################################### //
+
+// 0 (zero)
+#test decimal_to_int_1
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 0);
+
+// simple
+#test decimal_to_int_2
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 537;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 537);
+
+// negative
+#test decimal_to_int_3
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 7637;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, -7637);
+
+// int max
+#test decimal_to_int_4
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483647;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 2147483647);
+
+// int min
+#test decimal_to_int_5
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483648;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, -2147483648);
+
+// too big
+#test decimal_to_int_6
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483648;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_int_eq(n, 0);
+
+// too small
+#test decimal_to_int_7
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483649;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_int_eq(n, 0);
+
+// with scale
+#test decimal_to_int_8
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 432536;
+    dec.scale = 2;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 4325);
+
+// too big, but with scale
+#test decimal_to_int_9
+    int n;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483649;
+    dec.scale = 1;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 214748364);
+
+// negative and with scale
+#test decimal_to_int_10
+    int n;
+    s21_decimal dec = {{2147483649, 0, 0, 0}};
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, -214748);
+
+// negative and with scale
+#test decimal_to_int_11
+    int n;
+    s21_decimal dec = {{129999999, 0, 0, 0}};
+    dec.scale = 7;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, -12);
+
+// middle bit
+#test decimal_to_int_12
+    int n;
+    s21_decimal dec = {{79732, 5, 0, 0}};  // 21474916212
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_int_eq(n, 0);
+
+// high bit
+#test decimal_to_int_13
+    int n;
+    s21_decimal dec = {{99, 0, 3, 0}};    // 55340232221128654947
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_int_eq(n, 0);
+
+// high and middle bits
+#test decimal_to_int_14
+    int n;
+    s21_decimal dec = {{0, 1, 1, 0}};
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_int_eq(n, 0);
+
+// middle bit and scale
+#test decimal_to_int_15
+    int n;
+    s21_decimal dec = {{2, 1, 0, 0}};     // 4294967298
+    dec.scale = 1;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 429496729);
+
+// high bit and scale
+#test decimal_to_int_16
+    int n;
+    s21_decimal dec = {{0, 0, 5, 0}};      // 92233720368547758080
+    dec.scale = 13;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 9223372);
+
+// middle and high bits with big scale
+#test decimal_to_int_17
+    int n;
+    s21_decimal dec = {{36, 427, 53, 0}};      // 977677437740557271076
+    dec.scale = 19;
+    //printf("\n dec decimal: ");
+    //print_s21_decimal(dec);
+    //printf("\n dec decimal as ints: ");
+    //printDecimalAsInts(dec);
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, OK);
+    ck_assert_int_eq(n, 97);
+
+// middle and high bits with not enought scale
+#test decimal_to_int_18
+    int n;
+    s21_decimal dec = {{36, 427, 53, 0}};      // 977677437740557271076
+    dec.scale = 11;
+    res_code res = s21_from_decimal_to_int(dec, &n);
+    ck_assert_int_eq(res, CONVERTATION_ERR);
+    ck_assert_int_eq(n, 0);
+
+// ##################################################################### //
+// -------------------------- decimal to float-------------------------- //
+// ##################################################################### //
+
+// 0 (zero)
+#test decimal_to_float_1
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 0);
+
+// simple int
+#test decimal_to_float_2
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 37;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 37);
+
+// max int
+#test decimal_to_float_3
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483647;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 2147483647);
+
+// big low
+#test decimal_to_float_4
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2897483651;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 2897483651);
+
+// min int
+#test decimal_to_float_5
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 2147483648;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -2147483648);
+
+// big negative, but still int
+#test decimal_to_float_6
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 4147483612;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -4147483612);
+
+// negative with small scale
+#test decimal_to_float_7
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 4147483612;
+    dec.is_negative = TRUE;
+    dec.scale = 2;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -41474836.12);
+
+// negative with scale
+#test decimal_to_float_8
+    float flt;
+    s21_decimal dec;
+    make_zero_decimal(&dec);
+    dec.low = 4147483612;
+    dec.is_negative = TRUE;
+    dec.scale = 6;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -4147.483612);
+
+// high bit and scale
+#test decimal_to_float_9
+    s21_decimal dec = {{0, 0, 5, 0}};      // 92233720368547758080
+    float flt;
+    dec.scale = 5;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 922337203685477.58080);
+
+// all bits with scale
+#test decimal_to_float_10
+    s21_decimal dec = {{2324, 1345, 93724, 0}};    // 1728902641570130746673428
+    float flt;
+    dec.scale = 4;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 172890264157013074667.3428);
+
+// all bits with scale
+#test decimal_to_float_11
+    s21_decimal dec = {{23124, 4959223, 230808843, 0}};    // 4257671656791308027136334420
+    float flt;
+    dec.scale = 20;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -42576716.56791308027136334420);
+
+// all bits with scale
+#test decimal_to_float_12
+    s21_decimal dec = {{42154, 564, 35474, 0}};     // 654379799273194995623082
+    float flt;
+    dec.scale = 15;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 654379799.273194995623082);
+
+// max possible with scale
+#test decimal_to_float_13
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};    // 79228162514264337593543950335
+    float flt;
+    dec.scale = 22;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 7922816.2514264337593543950335);
+
+// max possible with scale
+#test decimal_to_float_14
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};    // 79228162514264337593543950335
+    float flt;
+    dec.scale = 10;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 7922816251426433759.3543950335);
+
+// max possible with 1 scale
+#test decimal_to_float_15
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}};    // 79228162514264337593543950335
+    float flt;
+    dec.scale = 1;
+    dec.is_negative = TRUE;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -7922816251426433759354395033.5);
+
+// negative zero
+#test decimal_to_float_16
+    s21_decimal dec = {0};
+    dec.is_negative = TRUE;
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -0.000000e+00);
+
+// #test decimal_to_float_nasa_1283
+//     // 1.0000001788139343261718750
+//     s21_decimal dec = {{0x8603D8DE, 0x2EE4C08A, 0x84595, 0x190000}};
+//     float flt;
+//     res_code res = s21_from_decimal_to_float(dec, &flt);
+//     ck_assert_int_eq(res, OK);
+//     ck_assert_float_eq(flt, 1.0000001788139343261718750f);    // 1.000000E+00
+
+// #test decimal_to_float_nasa_1284
+//     // -1.0000001788139343261718750
+//     s21_decimal dec = {{0x8603D8DE, 0x2EE4C08A, 0x84595, 0x80190000}};
+//     float flt;
+//     res_code res = s21_from_decimal_to_float(dec, &flt);
+//     ck_assert_int_eq(res, OK);
+//     ck_assert_float_eq(flt, -1.0000001788139343261718750);
+
+#test decimal_to_float_nasa_1291
+    // 27670117210075957249
+    s21_decimal dec = {{0x801, 0x80000100, 0x1, 0x0}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 27670117210075957249.0f);
+
+#test decimal_to_float_nasa_1292
+    // -27670117210075957249
+    s21_decimal dec = {{0x801, 0x80000100, 0x1, 0x80000000}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -27670117210075957249.0f);
+
+#test decimal_to_float_nasa_1295
+    // 27670117210075957248
+    s21_decimal dec = {{0x800, 0x80000100, 0x1, 0x0}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 27670117210075957248.0f);
+
+#test decimal_to_float_nasa_1296
+    // -27670117210075957248
+    s21_decimal dec = {{0x800, 0x80000100, 0x1, 0x80000000}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -27670117210075957248.0f);
+
+#test decimal_to_float_nasa_1349
+    // 79228160153081091760674832384
+    s21_decimal dec = {{0x0, 0xFFFFFC00, 0xFFFFFF7F, 0x0}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 79228160153081091760674832384.0f);
+
+#test decimal_to_float_nasa_1350
+    // -79228160153081091760674832384
+    s21_decimal dec = {{0x0, 0xFFFFFC00, 0xFFFFFF7F, 0x80000000}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -79228160153081091760674832384.0f);
+
+#test decimal_to_float_nasa_1351
+    // 79228160153081091760674832383
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFBFF, 0xFFFFFF7F, 0x0}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, 79228160153081091760674832383.0f);
+
+#test decimal_to_float_nasa_1352
+    // -79228160153081091760674832383
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFBFF, 0xFFFFFF7F, 0x80000000}};
+    float flt;
+    res_code res = s21_from_decimal_to_float(dec, &flt);
+    ck_assert_int_eq(res, OK);
+    ck_assert_float_eq(flt, -79228160153081091760674832383.0f);

@@ -1,0 +1,846 @@
+// ##################################################################### //
+// ----------------------------- truncation ---------------------------- //
+// ##################################################################### //
+
+// zero
+#test truncate_1
+printf("Testing truncation...\n");
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 0);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low and int
+#test truncate_2
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123456);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low bits small scale
+#test truncate_3
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 3;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low bits and big scale
+#test truncate_4
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 6;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 0);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple
+#test truncate_5
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 2;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 1234);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple
+#test truncate_6
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 238762;
+    dec.scale = 4;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 23);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple negative
+#test truncate_7
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 328791;
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 32);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and 0 scale
+#test truncate_8
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    dec.is_negative = TRUE;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 743);
+    ck_assert_uint_eq(round_result.middle, 3983);
+    ck_assert_uint_eq(round_result.high, 23081);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test truncate_9
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    dec.is_negative = TRUE;
+    dec.scale = 10;
+    res_code res = s21_truncate(dec, &round_result);               // 42576929998239
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 919192991);
+    ck_assert_uint_eq(round_result.middle, 9913);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test truncate_10
+    s21_decimal dec = {{36, 427, 53, 0}}, round_result;       // 977677437740557271076
+    dec.is_negative = TRUE;
+    dec.scale = 19;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 97);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test truncate_11
+    s21_decimal dec = {{45765936, 876, 176584, 0}}, round_result;       // 3257399855515689899676976
+    dec.scale = 3;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 3178321564);
+    ck_assert_uint_eq(round_result.middle, 2508260901);
+    ck_assert_uint_eq(round_result.high, 176);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// the biggest
+#test truncate_12
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 4;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 694066715);
+    ck_assert_uint_eq(round_result.middle, 3133608139);
+    ck_assert_uint_eq(round_result.high, 429496);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// the biggest
+#test truncate_13
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 6;
+    //print_s21_decimal(dec);
+    //printDecimalAsInts(dec);
+    res_code res = s21_truncate(dec, &round_result);
+    //print_s21_decimal(round_result);
+    //printDecimalAsInts(round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 2369172679);
+    ck_assert_uint_eq(round_result.middle, 4154504685);
+    ck_assert_uint_eq(round_result.high, 4294);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// zero fraction
+#test truncate_14
+    s21_decimal dec = {{36000000, 0, 0, 0}}, round_result;
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 360);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// null result
+#test truncate_15
+    s21_decimal dec = {{36000000, 0, 0, 0}};
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_truncate(dec, NULL);
+    ck_assert_int_eq(res, CALCULATION_ERR);
+
+// crazy scale
+#test truncate_15_1
+    s21_decimal dec = {{1836673108, 1935764837, 1685024599, 1819634291}}, round_result;
+    res_code res = s21_truncate(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 0);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+    
+
+// ##################################################################### //
+// ---------------------------- round to down -------------------------- //
+// ##################################################################### //
+
+// zero
+#test floor_1
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 0);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low and int
+#test floor_2
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123456);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low bits small scale
+#test floor_3
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 3;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low bits small scale
+#test floor_4
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 12345699;
+    dec.scale = 2;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123456);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// positive simple
+#test floor_5
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 1;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 12345);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// negative
+#test floor_6
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123999999;
+    dec.scale = 6;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 124);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// positive
+#test floor_7
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123999999;
+    dec.scale = 6;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// negative
+#test floor_8
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 1231000;
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 124);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// positive
+#test floor_9
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 1231000;
+    dec.scale = 3;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 1231);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple
+#test floor_10
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 238762;
+    dec.scale = 4;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 23);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple negative
+#test floor_11
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 328791;
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 33);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and 0 scale
+#test floor_12
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 743);
+    ck_assert_uint_eq(round_result.middle, 3983);
+    ck_assert_uint_eq(round_result.high, 23081);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test floor_13
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    dec.scale = 10;
+    res_code res = s21_floor(dec, &round_result);               // 42576929998239
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 919192991);
+    ck_assert_uint_eq(round_result.middle, 9913);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test floor_14
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    dec.scale = 10;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);               // -42576929998240
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 919192992);
+    ck_assert_uint_eq(round_result.middle, 9913);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test floor_15
+    s21_decimal dec = {{36, 427, 53, 0}}, round_result;       // 977677437740557271076
+    dec.scale = 19;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 97);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test floor_16
+    s21_decimal dec = {{36, 427, 53, 0}}, round_result;       // 977677437740557271076
+    dec.scale = 19;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 98);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test floor_17
+    s21_decimal dec = {{45765936, 876, 176584, 0}}, round_result;       // 3257399855515689899676976
+    dec.scale = 3;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 3178321564);
+    ck_assert_uint_eq(round_result.middle, 2508260901);
+    ck_assert_uint_eq(round_result.high, 176);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test floor_18
+    s21_decimal dec = {{45765936, 876, 176584, 0}}, round_result;       // 3257399855515689899676976
+    dec.scale = 3;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 3178321565);
+    ck_assert_uint_eq(round_result.middle, 2508260901);
+    ck_assert_uint_eq(round_result.high, 176);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// the biggest
+#test floor_19
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 4;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 694066715);
+    ck_assert_uint_eq(round_result.middle, 3133608139);
+    ck_assert_uint_eq(round_result.high, 429496);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// the smallest
+#test floor_20
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 694066716);
+    ck_assert_uint_eq(round_result.middle, 3133608139);
+    ck_assert_uint_eq(round_result.high, 429496);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// null result
+#test floor_21
+    s21_decimal dec = {{36000000, 0, 0, 0}};
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_floor(dec, NULL);
+    ck_assert_int_eq(res, CALCULATION_ERR);
+
+// null result
+#test floor_22
+    s21_decimal dec = {{36000000, 0, 0, 0}};
+    s21_decimal round_result;
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_floor(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 360);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// ##################################################################### //
+// ---------------------------- usual rounding ------------------------- //
+// ##################################################################### //
+
+// zero
+#test round_1
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 0);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low and int
+#test round_2
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123456);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low bits small scale
+#test round_3
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 3;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// low bits small scale
+#test round_4
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 12345699;
+    dec.scale = 2;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123457);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// positive simple
+#test round_5
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123456;
+    dec.scale = 1;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 12346);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// negative
+#test round_6
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123999999;
+    dec.scale = 6;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 124);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// positive
+#test round_7
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 123999999;
+    dec.scale = 6;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 124);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// negative
+#test round_8
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 1231000;
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 123);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// positive
+#test round_9
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 1231000;
+    dec.scale = 3;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 1231);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple
+#test round_10
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 238762;
+    dec.scale = 4;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 24);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// simple negative
+#test round_11
+    s21_decimal dec, round_result;
+    make_zero_decimal(&dec);
+    dec.low = 328791;
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 33);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and 0 scale
+#test round_12
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 743);
+    ck_assert_uint_eq(round_result.middle, 3983);
+    ck_assert_uint_eq(round_result.high, 23081);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test round_13
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    dec.scale = 10;
+    res_code res = s21_round(dec, &round_result);               // 42576929998240
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 919192992);
+    ck_assert_uint_eq(round_result.middle, 9913);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test round_14
+    s21_decimal dec = {{743, 3983, 23081, 0}}, round_result;       // 425769299982397015589607
+    dec.scale = 10;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);               // -42576929998240
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 919192992);
+    ck_assert_uint_eq(round_result.middle, 9913);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test round_15
+    s21_decimal dec = {{36, 427, 53, 0}}, round_result;       // 977677437740557271076
+    dec.scale = 19;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 98);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test round_16
+    s21_decimal dec = {{36, 427, 53, 0}}, round_result;       // 977677437740557271076
+    dec.scale = 19;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 98);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// all the bits and big scale
+#test round_17
+    s21_decimal dec = {{45765936, 876, 176584, 0}}, round_result;       // 3257399855515689899676976
+    dec.scale = 3;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 3178321565);
+    ck_assert_uint_eq(round_result.middle, 2508260901);
+    ck_assert_uint_eq(round_result.high, 176);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// all the bits and big scale
+#test round_18
+    s21_decimal dec = {{45765936, 876, 176584, 0}}, round_result;       // 3257399855515689899676976
+    dec.scale = 3;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 3178321565);
+    ck_assert_uint_eq(round_result.middle, 2508260901);
+    ck_assert_uint_eq(round_result.high, 176);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// the biggest
+#test round_19
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 4;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 694066715);
+    ck_assert_uint_eq(round_result.middle, 3133608139);
+    ck_assert_uint_eq(round_result.high, 429496);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// the smallest
+#test round_20
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 4;
+    dec.is_negative = TRUE;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 694066715);
+    ck_assert_uint_eq(round_result.middle, 3133608139);
+    ck_assert_uint_eq(round_result.high, 429496);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// null result
+#test round_21
+    s21_decimal dec = {{36000000, 0, 0, 0}};
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_round(dec, NULL);
+    ck_assert_int_eq(res, CALCULATION_ERR);
+
+// zero fraction
+#test round_22
+    s21_decimal dec = {{36000000, 0, 0, 0}};
+    s21_decimal round_result;
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 360);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// previous banking rounding
+#test round_23
+    s21_decimal dec = {{3650000, 0, 0, 0}};
+    s21_decimal round_result;
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 37);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// previous banking rounding
+#test round_24
+    s21_decimal dec = {{3750000, 0, 0, 0}};
+    s21_decimal round_result;
+    dec.is_negative = TRUE;
+    dec.scale = 5;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 38);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 1);
+
+// previous banking rounding
+#test round_25
+    s21_decimal dec = {{105, 0, 0, 0}};
+    s21_decimal round_result;
+    dec.scale = 1;
+    res_code res = s21_round(dec, &round_result);
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 11);
+    ck_assert_uint_eq(round_result.middle, 0);
+    ck_assert_uint_eq(round_result.high, 0);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
+
+// previous banking rounding
+#test round_26
+    s21_decimal dec = {{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0}}, round_result;       // 79228162514264337593543950335
+    dec.scale = 1;
+    res_code res = s21_round(dec, &round_result);                                    // 7922816251426433759354395034
+    ck_assert_int_eq(res, OK);
+    ck_assert_uint_eq(round_result.low, 2576980378);
+    ck_assert_uint_eq(round_result.middle, 2576980377);
+    ck_assert_uint_eq(round_result.high, 429496729);
+    ck_assert_uint_eq(round_result.scale, 0);
+    ck_assert_uint_eq(round_result.is_negative, 0);
